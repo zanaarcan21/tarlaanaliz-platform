@@ -1,3 +1,80 @@
-# PATH: .dockerignore
-# DESC: Docker build context ignore.
-# TODO: Implement this file.
+# =============================================================================
+# .dockerignore — Docker build context optimizasyonu ve guvenlik
+# KR-040 Konteyner guvenligi ve "least privilege" ilkesi
+# =============================================================================
+
+# --- Git ---
+.git
+.gitignore
+
+# --- CI/CD ---
+.github
+
+# --- Environment & Secrets (KR-040: secret sizintisi onleme) ---
+.env
+.env.*
+!.env.example
+
+# --- Python ---
+__pycache__
+*.py[cod]
+*.pyo
+*.egg-info
+*.egg
+dist/
+build/
+.eggs/
+*.whl
+
+# --- Virtual Environments ---
+.venv
+venv
+env
+
+# --- Node / Frontend build artifacts ---
+web/node_modules
+web/.next
+web/out
+web/.pnpm-store
+node_modules
+
+# --- Test & Coverage ---
+tests/
+.pytest_cache
+.coverage
+htmlcov/
+coverage.xml
+.mypy_cache
+
+# --- IDE ---
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# --- Docker ---
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# --- Documentation ---
+docs/
+CHANGELOG.md
+MANIFEST_CANONICAL.md
+CONTRACTS_VERSION.md
+
+# --- Pre-commit ---
+.pre-commit-config.yaml
+
+# --- OS artifacts ---
+.DS_Store
+Thumbs.db
+
+# --- Scripts (utility, not runtime) ---
+scripts/
+
+# --- Miscellaneous ---
+*.log
+*.tmp
+*.bak

@@ -1,3 +1,64 @@
-# PATH: .pre-commit-config.yaml
-# DESC: Commit öncesi otomatik kalite kontrolleri (format/lint).
-# TODO: Implement this file.
+# =============================================================================
+# .pre-commit-config.yaml
+# Commit oncesi yerel ortamda kalite ve guvenlik kontrolleri
+# KR-040/KR-041 SDLC kapilari: format, lint, secret tarama
+# =============================================================================
+# Kurulum: pip install pre-commit && pre-commit install
+
+repos:
+  # --- Genel dosya kontrolleri ---
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=1024]
+      - id: detect-private-key
+      - id: no-commit-to-branch
+        args: [--branch, main, --branch, master]
+
+  # --- Python: Ruff (lint + format) ---
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.6
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        types_or: [python, pyi]
+      - id: ruff-format
+        types_or: [python, pyi]
+
+  # --- Python: Black (formatter - Ruff fallback) ---
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        language_version: python3.12
+        args: [--line-length=120]
+
+  # --- Secret tarama [KR-040: PR Gate] ---
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: [--baseline, .secrets.baseline]
+        exclude: \.env\.example$
+
+  # --- YAML lint ---
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: [-d, relaxed]
+
+  # --- Markdown lint ---
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.42.0
+    hooks:
+      - id: markdownlint
+        args: [--fix, --disable, MD013, MD033, MD041, --]

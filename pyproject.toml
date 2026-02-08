@@ -1,3 +1,178 @@
-# PATH: pyproject.toml
-# DESC: Python packaging, bağımlılıklar ve tooling.
-# TODO: Implement this file.
+# =============================================================================
+# pyproject.toml — Python proje yapilandirmasi ve paket bagimliliklari
+# Backend build standardi; Poetry/Pip dependency listesi + tooling config
+# =============================================================================
+
+[build-system]
+requires = ["setuptools>=75.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tarlaanaliz-platform"
+version = "3.2.2"
+description = "TarlaAnaliz — Tarimsal drone analiz platformu backend servisi"
+readme = "README.md"
+license = {text = "Proprietary"}
+requires-python = ">=3.12"
+authors = [
+    {name = "TarlaAnaliz Team"},
+]
+
+dependencies = [
+    # --- Web Framework ---
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+
+    # --- Database ---
+    "sqlalchemy[asyncio]>=2.0.36",
+    "asyncpg>=0.30.0",
+    "alembic>=1.14.0",
+    "geoalchemy2>=0.15.0",
+
+    # --- Cache ---
+    "redis>=5.2.0",
+
+    # --- Message Queue ---
+    "aio-pika>=9.5.0",
+
+    # --- Auth / Security ---
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+
+    # --- HTTP Client ---
+    "httpx>=0.28.0",
+
+    # --- Object Storage ---
+    "boto3>=1.35.0",
+
+    # --- Geospatial ---
+    "shapely>=2.0.6",
+
+    # --- Observability ---
+    "structlog>=24.4.0",
+    "sentry-sdk[fastapi]>=2.19.0",
+    "prometheus-client>=0.21.0",
+
+    # --- Utilities ---
+    "python-dotenv>=1.0.1",
+    "orjson>=3.10.0",
+    "tenacity>=9.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    # --- Testing ---
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "pytest-mock>=3.14.0",
+    "httpx>=0.28.0",
+    "factory-boy>=3.3.0",
+    "faker>=33.0.0",
+
+    # --- Linting & Formatting ---
+    "ruff>=0.8.6",
+    "black>=24.10.0",
+    "mypy>=1.14.0",
+
+    # --- Pre-commit ---
+    "pre-commit>=4.0.0",
+
+    # --- Database (test) ---
+    "testcontainers[postgres]>=4.9.0",
+]
+
+[project.scripts]
+tarlaanaliz = "src.presentation.cli.main:app"
+
+# =============================================================================
+# Tool Configurations
+# =============================================================================
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+# --- Ruff ---
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "S",    # flake8-bandit (security)
+    "T20",  # flake8-print
+    "SIM",  # flake8-simplify
+    "RUF",  # ruff-specific
+]
+ignore = [
+    "S101",   # assert kullanimi (test'lerde gerekli)
+    "S104",   # 0.0.0.0 binding (container icinde gerekli)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+
+# --- Black ---
+[tool.black]
+target-version = ["py312"]
+line-length = 120
+
+# --- Mypy ---
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+
+# --- Pytest ---
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--tb=short",
+    "-q",
+]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "e2e: End-to-end tests",
+    "performance: Performance tests",
+    "slow: Slow running tests",
+]
+
+# --- Coverage ---
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = [
+    "src/presentation/cli/*",
+    "src/infrastructure/config/*",
+]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 80
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.",
+    "@overload",
+]

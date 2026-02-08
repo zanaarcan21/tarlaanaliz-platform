@@ -1,3 +1,30 @@
-# PATH: CONTRACTS_SHA256.txt
-# DESC: Contracts paketinin içerik hash'i (supply-chain integrity).
-# TODO: Implement this file.
+# =============================================================================
+# CONTRACTS_SHA256.txt — Shared contracts paketi icerik butunlugu (checksum)
+# KR-081 Contract-First / KR-042 Veri Butunlugu
+#
+# Bu dosya, kullanilan sozlesmelerin izinsiz degistirilmedigini
+# matematiksel olarak kanitlar. CI pipeline'da dogrulanir.
+#
+# Format: <sha256_hash>  <dosya_yolu>
+# Yeniden uretim: sha256sum <dosya> >> CONTRACTS_SHA256.txt
+# =============================================================================
+
+# --- Contract Schemas (KR-081) ---
+# analysis_job.v1.schema.json ve analysis_result.v1.schema.json
+# SSOT icerisinde gomulu olarak tanimlanmistir (KR-081.1 / KR-081.2)
+
+# Asagidaki hash'ler, contracts dizini olusturuldugunda
+# gercek dosya hash'leri ile guncellenmelidir.
+
+# PLACEHOLDER — CI pipeline aktif oldugunda doldurulacak:
+# <sha256>  shared/contracts/analysis_job.v1.schema.json
+# <sha256>  shared/contracts/analysis_result.v1.schema.json
+# <sha256>  shared/contracts/ai_feedback.v1.schema.json
+
+# --- Event Schemas ---
+# <sha256>  shared/contracts/events/mission_events.v1.schema.json
+# <sha256>  shared/contracts/events/payment_events.v1.schema.json
+# <sha256>  shared/contracts/events/subscription_events.v1.schema.json
+
+# --- Dogrulama Komutu ---
+# sha256sum -c CONTRACTS_SHA256.txt
