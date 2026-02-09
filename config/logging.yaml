@@ -1,3 +1,123 @@
-# PATH: config/logging.yaml
-# DESC: Runtime configuration: logging.yaml.
-# TODO: Implement this file.
+# =============================================================================
+# config/logging.yaml
+# Amaç: Uygulama loglama konfigürasyonu — BÖLÜM 3 Gözlemlenebilirlik standardı.
+# Sorumluluk: Log formatı (JSONL), seviyesi, hedefleri ve PII maskeleme kuralları.
+# =============================================================================
+
+version: 1
+disable_existing_loggers: false
+
+formatters:
+  # JSONL formatı — yapılandırılmış loglama (stdout/dosya)
+  jsonl:
+    class: pythonjsonlogger.jsonlogger.JsonFormatter
+    format: "%(asctime)s %(name)s %(levelname)s %(message)s"
+    datefmt: "%Y-%m-%dT%H:%M:%S%z"
+    static_fields:
+      service: "tarlaanaliz-api"
+      environment: "${ENVIRONMENT:-development}"
+
+  # Geliştirme ortamı için okunabilir format
+  console:
+    format: "%(asctime)s [%(levelname)-5s] %(name)s — %(message)s"
+    datefmt: "%H:%M:%S"
+
+handlers:
+  # Stdout handler (container/k8s ortamı için)
+  stdout:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: jsonl
+    stream: ext://sys.stdout
+
+  # Stderr handler (hata logları)
+  stderr:
+    class: logging.StreamHandler
+    level: ERROR
+    formatter: jsonl
+    stream: ext://sys.stderr
+
+  # Dosya handler (rotasyonlu)
+  file:
+    class: logging.handlers.RotatingFileHandler
+    level: DEBUG
+    formatter: jsonl
+    filename: "logs/tarlaanaliz.log"
+    maxBytes: 52428800   # 50 MB
+    backupCount: 5
+    encoding: utf-8
+
+  # Audit log handler (ayrı dosya — WORM prensibi)
+  audit_file:
+    class: logging.handlers.RotatingFileHandler
+    level: INFO
+    formatter: jsonl
+    filename: "logs/audit.log"
+    maxBytes: 104857600  # 100 MB
+    backupCount: 10
+    encoding: utf-8
+
+loggers:
+  # Uygulama root logger
+  tarlaanaliz:
+    level: INFO
+    handlers: [stdout, file]
+    propagate: false
+
+  # Audit trail logger (ayrı handler)
+  tarlaanaliz.audit:
+    level: INFO
+    handlers: [audit_file, stdout]
+    propagate: false
+
+  # Veritabanı sorgu logları
+  sqlalchemy.engine:
+    level: WARNING
+    handlers: [stdout]
+    propagate: false
+
+  # Alembic migration logları
+  alembic:
+    level: INFO
+    handlers: [stdout]
+    propagate: false
+
+  # HTTP istek logları
+  uvicorn.access:
+    level: INFO
+    handlers: [stdout]
+    propagate: false
+
+root:
+  level: WARNING
+  handlers: [stdout]
+
+# PII maskeleme kuralları
+# Log mesajlarında aşağıdaki alanlar maskelenir
+pii_masking:
+  enabled: true
+  fields:
+    - phone_number     # 0532****89 formatına dönüştürülür
+    - pin_hash         # Tamamen gizlenir
+    - iban             # TR**************1234 formatı
+    - full_name        # İlk harf + *** formatı
+    - email            # ***@domain formatı (varsa)
+  replacement: "***MASKED***"
+
+# Yapılandırılmış log alanları (BÖLÜM 3 standardı)
+structured_fields:
+  required:
+    - timestamp        # ISO 8601
+    - level            # DEBUG, INFO, WARNING, ERROR, CRITICAL
+    - service          # Servis adı
+    - correlation_id   # İstek zinciri takibi (X-Correlation-ID)
+    - message          # Log mesajı
+  optional:
+    - user_id_hash     # Kullanıcı kimliği (hash)
+    - mission_id       # İlgili mission
+    - field_id         # İlgili tarla
+    - http_method      # GET, POST, vb.
+    - http_path        # İstek yolu
+    - http_status      # Yanıt kodu
+    - latency_ms       # İşlem süresi
+    - error_code       # Hata kodu

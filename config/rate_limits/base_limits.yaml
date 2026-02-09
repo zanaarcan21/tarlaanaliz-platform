@@ -1,3 +1,97 @@
-# PATH: config/rate_limits/base_limits.yaml
-# DESC: Rate limit (hız sınırı) profillerini tanımlamak.
-# TODO: Implement this file.
+# =============================================================================
+# config/rate_limits/base_limits.yaml
+# Amaç: KR-042 Güvenlik gereği API endpoint'leri için varsayılan hız sınırları.
+# Sorumluluk: DDoS ve Brute Force koruması için rol ve endpoint bazlı limitler.
+# =============================================================================
+
+# Varsayılan global limitler (tüm endpointler için geçerli)
+defaults:
+  requests_per_minute: 60
+  requests_per_hour: 1000
+  burst_size: 10  # Anlık izin verilen maksimum istek
+
+# Kimlik doğrulama endpointleri (brute force koruması)
+auth:
+  login:
+    requests_per_minute: 5
+    requests_per_hour: 30
+    lockout_after_failures: 5
+    lockout_duration_minutes: 15
+  pin_reset:
+    requests_per_minute: 3
+    requests_per_hour: 10
+
+# Rol bazlı limitler
+roles:
+  farmer_single:
+    requests_per_minute: 30
+    requests_per_hour: 500
+  farmer_member:
+    requests_per_minute: 30
+    requests_per_hour: 500
+  coop_owner:
+    requests_per_minute: 60
+    requests_per_hour: 1500
+  il_operator:
+    requests_per_minute: 120
+    requests_per_hour: 3000
+  pilot:
+    requests_per_minute: 60
+    requests_per_hour: 1000
+  expert:
+    requests_per_minute: 60
+    requests_per_hour: 1000
+  admin:
+    requests_per_minute: 200
+    requests_per_hour: 5000
+  system:
+    requests_per_minute: 500
+    requests_per_hour: 10000
+
+# Endpoint bazlı özel limitler
+endpoints:
+  # Ödeme işlemleri
+  payment_intents:
+    create:
+      requests_per_minute: 5
+      requests_per_hour: 50
+    approve:
+      requests_per_minute: 20
+      requests_per_hour: 200
+
+  # Mission oluşturma
+  missions:
+    create:
+      requests_per_minute: 10
+      requests_per_hour: 100
+    list:
+      requests_per_minute: 60
+      requests_per_hour: 1000
+
+  # Dosya yükleme (drone verileri)
+  uploads:
+    requests_per_minute: 5
+    requests_per_hour: 50
+    max_file_size_mb: 500
+
+  # Analiz sonuçları
+  analysis_results:
+    requests_per_minute: 30
+    requests_per_hour: 500
+
+  # Abonelik işlemleri
+  subscriptions:
+    create:
+      requests_per_minute: 5
+      requests_per_hour: 30
+    reschedule:
+      requests_per_minute: 3
+      requests_per_hour: 10
+
+# Rate limit aşımı davranışı
+enforcement:
+  strategy: "sliding_window"  # sliding_window | fixed_window | token_bucket
+  response_status: 429
+  retry_after_header: true
+  log_violations: true
+  block_duration_seconds: 60

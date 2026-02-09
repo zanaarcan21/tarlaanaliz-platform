@@ -1,3 +1,66 @@
-# PATH: config/rate_limits/seasonal_config.yaml
-# DESC: Sezonluk rate limit profilleri (Ekim-Aralık peak season).
-# TODO: Implement this file.
+# =============================================================================
+# config/rate_limits/seasonal_config.yaml
+# Amaç: Ekim-Aralık gibi yoğun dönemlerde limitleri dinamik olarak ayarlamak.
+# Sorumluluk: KR-015 Operasyonel esneklik — peak season kapasitesi.
+# =============================================================================
+
+# Sezon profilleri
+profiles:
+  # Normal dönem (Ocak-Eylül) — base_limits.yaml değerleri geçerli
+  off_season:
+    active_months: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    multiplier: 1.0
+    description: "Normal dönem — base limitler geçerli"
+
+  # Yoğun dönem (Ekim-Aralık) — limitler artırılır
+  peak_season:
+    active_months: [10, 11, 12]
+    multiplier: 2.0
+    description: "Hasat dönemi — artan talep için limitler 2x artırılır"
+
+    # Endpoint bazlı özel ayarlamalar (multiplier'ı override eder)
+    endpoint_overrides:
+      missions:
+        create:
+          requests_per_minute: 30   # 10 -> 30 (3x)
+          requests_per_hour: 300    # 100 -> 300
+        list:
+          requests_per_minute: 120  # 60 -> 120
+          requests_per_hour: 3000   # 1000 -> 3000
+
+      analysis_results:
+        requests_per_minute: 90     # 30 -> 90 (3x)
+        requests_per_hour: 1500     # 500 -> 1500
+
+      uploads:
+        requests_per_minute: 15     # 5 -> 15
+        requests_per_hour: 150      # 50 -> 150
+
+    # Rol bazlı özel ayarlamalar
+    role_overrides:
+      coop_owner:
+        requests_per_minute: 150    # 60 -> 150 (kooperatif toplu işlemleri)
+        requests_per_hour: 4000
+      pilot:
+        requests_per_minute: 120    # 60 -> 120 (yoğun uçuş dönemi)
+        requests_per_hour: 2500
+
+  # Acil durum profili (manuel aktivasyon)
+  emergency:
+    active_months: []  # Manuel olarak aktive edilir
+    multiplier: 0.5
+    description: "Acil durum — limitler yarıya düşürülür (DDoS/incident)"
+
+    role_overrides:
+      admin:
+        requests_per_minute: 200    # Admin limitleri korunur
+        requests_per_hour: 5000
+
+# Profil geçiş kuralları
+transition:
+  # Profil geçişi otomatik mi yoksa manuel mi?
+  auto_switch: true
+  # Geçiş sırasında mevcut istekler tamamlanır
+  graceful_transition: true
+  # Geçiş logu
+  log_transitions: true
