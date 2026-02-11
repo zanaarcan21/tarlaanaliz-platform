@@ -1,5 +1,14 @@
 # PATH: src/infrastructure/contracts/__init__.py
-# DESC: Infrastructure adapter/implementation: __init__.py.
-# TODO: Implement this file.
+"""Infrastructure contracts package: versiyonlu şema yönetimi."""
 
-__all__: list[str] = []
+from src.infrastructure.contracts.schema_registry import (
+    SchemaNotFoundError,
+    SchemaRegistry,
+    SchemaValidationError,
+)
+
+__all__: list[str] = [
+    "SchemaRegistry",
+    "SchemaNotFoundError",
+    "SchemaValidationError",
+]

@@ -1,5 +1,227 @@
 # PATH: src/core/__init__.py
-# DESC: Project file: __init__.py.
-# TODO: Implement this file.
+"""
+Core package public API.
 
-__all__: list[str] = []
+Domain katmanı ve port interface'lerinin tek giriş noktası.
+Dış dünya erişimi (IO, veritabanı, HTTP) bu katmanda YOKTUR.
+
+Alt paketler:
+  - domain.entities: Aggregate root ve entity tanımları.
+  - domain.value_objects: Immutable değer nesneleri.
+  - domain.services: Domain servisleri (saf iş kuralları).
+  - domain.events: Domain event tanımları.
+  - ports.external: Dış servis port interface'leri.
+  - ports.messaging: Event publish/subscribe port interface'leri.
+  - ports.repositories: Veri erişim port interface'leri.
+
+SSOT: KR-015, KR-018, KR-033, KR-081 ile tutarlı.
+"""
+
+# -- Domain Entities --
+from src.core.domain.entities import (
+    AnalysisJob,
+    AnalysisResult,
+    AuditLogEntry,
+    CalibrationRecord,
+    Expert,
+    ExpertReview,
+    FeedbackRecord,
+    Field,
+    Mission,
+    PaymentIntent,
+    Pilot,
+    PriceSnapshot,
+    QCReportRecord,
+    Subscription,
+    User,
+    UserPII,
+    WeatherBlockReport,
+)
+
+# -- Domain Events --
+from src.core.domain.events import (
+    AnalysisCompleted,
+    AnalysisFailed,
+    AnalysisRequested,
+    AnalysisStarted,
+    CalibrationValidated,
+    DataUploaded,
+    DomainEvent,
+    ExpertActivated,
+    ExpertDeactivated,
+    ExpertRegistered,
+    ExpertReviewAssigned,
+    ExpertReviewCompleted,
+    ExpertReviewEscalated,
+    ExpertReviewRequested,
+    FeedbackProvided,
+    FieldCreated,
+    FieldCropUpdated,
+    FieldDeleted,
+    FieldUpdated,
+    LowConfidenceDetected,
+    MissionAnalysisRequested,
+    MissionAssigned,
+    MissionCancelled,
+    MissionCompleted,
+    MissionReplanQueued,
+    MissionScheduled,
+    MissionStarted,
+    PaymentApproved,
+    PaymentIntentCreated,
+    PaymentRejected,
+    ReceiptUploaded,
+    SubscriptionActivated,
+    SubscriptionCompleted,
+    SubscriptionCreated,
+    SubscriptionRescheduled,
+    TrainingDataExported,
+    TrainingFeedbackAccepted,
+    TrainingFeedbackRejected,
+    TrainingFeedbackSubmitted,
+)
+
+# -- External Ports --
+from src.core.ports.external import (
+    AIWorkerFeedback,
+    BlobMetadata,
+    FeedbackPipelineStatus,
+    FeedbackSubmissionResult,
+    ParcelGeometry,
+    ParcelGeometryProvider,
+    ParcelValidationResult,
+    PaymentGateway,
+    PaymentSessionResponse,
+    PaymentVerificationResult,
+    PresignedUrl,
+    RefundResult,
+    SMSGateway,
+    SmsBatchResult,
+    SmsDeliveryStatus,
+    SmsResult,
+    StorageService,
+    TrainingDatasetExport,
+)
+
+# -- Messaging Ports --
+from src.core.ports.messaging import EventBus, EventHandler
+
+# -- Repository Ports --
+from src.core.ports.repositories import (
+    AnalysisResultRepository,
+    AuditLogRepository,
+    CalibrationRecordRepository,
+    ExpertRepository,
+    ExpertReviewRepository,
+    FeedbackRecordRepository,
+    FieldRepository,
+    MissionRepository,
+    PaymentIntentRepository,
+    PilotRepository,
+    PriceSnapshotRepository,
+    QCReportRepository,
+    SubscriptionRepository,
+    UserRepository,
+    WeatherBlockReportRepository,
+    WeatherBlockRepository,
+)
+
+__all__: list[str] = [
+    # -- Domain Entities --
+    "AnalysisJob",
+    "AnalysisResult",
+    "AuditLogEntry",
+    "CalibrationRecord",
+    "Expert",
+    "ExpertReview",
+    "FeedbackRecord",
+    "Field",
+    "Mission",
+    "PaymentIntent",
+    "Pilot",
+    "PriceSnapshot",
+    "QCReportRecord",
+    "Subscription",
+    "User",
+    "UserPII",
+    "WeatherBlockReport",
+    # -- Domain Events --
+    "DomainEvent",
+    "AnalysisRequested",
+    "AnalysisStarted",
+    "AnalysisCompleted",
+    "AnalysisFailed",
+    "CalibrationValidated",
+    "LowConfidenceDetected",
+    "ExpertRegistered",
+    "ExpertActivated",
+    "ExpertDeactivated",
+    "FeedbackProvided",
+    "ExpertReviewRequested",
+    "ExpertReviewAssigned",
+    "ExpertReviewCompleted",
+    "ExpertReviewEscalated",
+    "FieldCreated",
+    "FieldUpdated",
+    "FieldCropUpdated",
+    "FieldDeleted",
+    "MissionAssigned",
+    "MissionStarted",
+    "DataUploaded",
+    "MissionAnalysisRequested",
+    "MissionCompleted",
+    "MissionCancelled",
+    "MissionReplanQueued",
+    "PaymentIntentCreated",
+    "ReceiptUploaded",
+    "PaymentApproved",
+    "PaymentRejected",
+    "SubscriptionCreated",
+    "SubscriptionActivated",
+    "MissionScheduled",
+    "SubscriptionCompleted",
+    "SubscriptionRescheduled",
+    "TrainingFeedbackSubmitted",
+    "TrainingFeedbackAccepted",
+    "TrainingFeedbackRejected",
+    "TrainingDataExported",
+    # -- External Ports --
+    "AIWorkerFeedback",
+    "FeedbackSubmissionResult",
+    "TrainingDatasetExport",
+    "FeedbackPipelineStatus",
+    "ParcelGeometryProvider",
+    "ParcelGeometry",
+    "ParcelValidationResult",
+    "PaymentGateway",
+    "PaymentSessionResponse",
+    "PaymentVerificationResult",
+    "RefundResult",
+    "SMSGateway",
+    "SmsResult",
+    "SmsBatchResult",
+    "SmsDeliveryStatus",
+    "StorageService",
+    "BlobMetadata",
+    "PresignedUrl",
+    # -- Messaging Ports --
+    "EventBus",
+    "EventHandler",
+    # -- Repository Ports --
+    "AnalysisResultRepository",
+    "AuditLogRepository",
+    "CalibrationRecordRepository",
+    "ExpertRepository",
+    "ExpertReviewRepository",
+    "FeedbackRecordRepository",
+    "FieldRepository",
+    "MissionRepository",
+    "PaymentIntentRepository",
+    "PilotRepository",
+    "PriceSnapshotRepository",
+    "QCReportRepository",
+    "SubscriptionRepository",
+    "UserRepository",
+    "WeatherBlockReportRepository",
+    "WeatherBlockRepository",
+]
