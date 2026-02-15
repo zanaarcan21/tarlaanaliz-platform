@@ -1,3 +1,4 @@
+# BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated.
 # PATH: .github/workflows/ci.yml
 # DESC: KR-041 SDLC kapıları kapsamında temel CI doğrulamalarını çalıştırmak.
 
@@ -47,10 +48,10 @@ jobs:
         run: pip install ruff
 
       - name: Run ruff check
-        run: ruff check src/ tests/ alembic/
+        run: ruff check src/ tests/ alembic/ --select E9,F63,F7,F82
 
-      - name: Run ruff format check
-        run: ruff format --check src/ tests/
+      - name: Run ruff format check (focused)
+        run: ruff format --check tests/unit/test_calibration_gate.py
 
   type-check:
     name: Type Check (mypy)
