@@ -1,56 +1,21 @@
 # TarlaAnaliz – Tek Kaynak Gerçek (SSOT)
 ## Single Source of Truth v1.0.0
 
-**Sürüm:** 1.0.0 | **Tarih:** 2026-02-14 | **Format:** AI-Ready Unified Document (Sadeleştirilmiş)
+**Sürüm:** 1.0.0 | **Tarih:** 2026-02-08 | **Format:** AI-Ready Unified Document (Sadeleştirilmiş)
 
-**🧱 v1.0.0 Baz Sürüm Notları (Uygulama Başlangıcı):**
-
-**Not (Kanonik Referans Haritası):
-
-**KR Şablonu (Kanonik):**
-1) Amaç
-2) Kapsam / Applies-to
-3) Zorunluluklar (MUST) — test edilebilir maddeler
-4) Kanıt / Artefact (manifest, raporlar, sertifika, event)
-5) Audit / Log (olay adları + correlation_id)
-6) Hata Modları / Quarantine kararları
-7) Test / Kabul Kriterleri (E2E senaryolar)
-8) Cross-refs (ilgili KR’ler)
-**
-
-**KR Şablonu (Önerilen):
-
-## KR Domain Paketleri İndeksi (Navigasyon)
-**Not:** Bu bölüm sadece navigasyon içindir. Asıl normatif metin her KR başlığının altındadır.
-
-### A) Security & Isolation
-- KR-070 — Worker Isolation & Egress Policy
-- KR-071 — One-way Data Flow + Allowlist Yerleşimi (Ingress)
-- KR-073 — Untrusted File Handling + AV1/AV2 + Sandbox
-
-### B) Data Lifecycle & Evidence (Chain of Custody)
-- KR-072 — Dataset Lifecycle + Kanıt Zinciri (manifest/hash/signature/verification)
-- KR-018 — Radiometric Calibration Hard Gate (QC + Certificate)
-- KR-081 — Contract-First / Schema Gates (CI)
-
-### C) Orchestration & Operations
-- KR-017 — YZ Analiz Hattı (Şemsiye KR: 070–073 ayrıştırması)
-- KR-015 — Pilot kapasite/planlama alt kuralları
-
-### D) Payments & Governance
-- KR-033 — Ödeme + Manuel Onay + Audit
-** Amaç → Kapsam → Zorunluluklar (MUST) → Kanıt/Audit → Hata Modları → Test/Kabul → Cross‑refs
-
-- [KR-017] Şemsiye kural: “AnalysisJob semantiği + PII yok + Edge’de model yok + Worker inbound yok + sonuçlar tek yönlü”
-- [KR-070] Worker izolasyonu + egress policy (inbound kapalı) — network policy matrix + egress allowlist + ops erişimi
-- [KR-071] Tek yönlü veri akışı + allowlist yerleşimi (Ingress’te) — mTLS ana kimlik, allowlist ikincil; akış Edge→Platform→Storage/Queue→Worker→Platform→Web
-- [KR-072] Dataset lifecycle + kanıt zinciri — manifest/hash/signature + AV1/AV2 + verification_report + state machine; tamper/mismatch ispatı
-- [KR-073] Untrusted file handling — ham dosya sandbox; iki aşamalı tarama; quarantine; güvenli türev üretim
-
+**🧱 v1.0.0 Baz Sürüm Notları (Kod Üretimi Başlangıcı):**
+- Bu doküman, TarlaAnaliz için **tek kanonik SSOT** olarak kabul edilir ve kod üretiminde “normatif kaynak”tır.
+- Kritik sabitler:
+  - Kimlik: **telefon + 6 haneli PIN**, e-posta/TCKN yok, OTP/SMS doğrulama yok → **[KR-050]**
+  - YZ izolasyonu ve tek yönlü sonuç akışı → **[KR-017]** (operasyonel özet: **[KR-070]**, SOP: **BÖLÜM 2.6**)
+  - Tam radyometrik kalibrasyon “hard gate” → **[KR-018 / KR-082]**
+  - Contract-first (makine-doğrulanabilir şema) → **[KR-081]**
+  - Ödeme + manuel onay akışı → **[KR-033]**
+  - RBAC kanonik matrisi → **[KR-063]** (özet rol anlatımı: **[KR-011]**)
 
 # BÖLÜM 1: KANONİK KURALLAR [KR-xxx]
 
-> ⚠️ **KRİTİK:** Bu bölümdeki kurallar değiştirilemez. Tüm uygulama/servisler bu kurallara uymalıdır.
+> ⚠️ **KRİTİK:** Bu bölümdeki kurallar değiştirilemez. Tüm kod bu kurallara uymalıdır.
 
 ## [KR-000] Bu doküman seti nasıl okunur?
 
@@ -114,14 +79,21 @@
 **Tarla Kaydı:** Her tarla için il, ilçe, mahalle/köy, ada, parsel ve alan (m²) girilir. Sistem benzersiz FieldID üretir.
 
 **Tekil Kayıt Kuralı:**
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```
+Aynı il + ilçe + mahalle/köy + ada + parsel kombinasyonu 
+ikinci kez kaydedilemez.
+```
 
 **Bitki Türü Tanımı:** Her tarla için ekili bitki türü seçilir. Birden fazla bitki varsa her biri ayrı seçilir ve alan (m²) girilir.
 
 **Analiz Talebi:** Bitki türü bazında oluşturulur. Seçenekler: yıllık abonelik veya tek seferlik analiz.
 
 **Bitki Türü Değiştirme Kuralı:**
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```
+Yılda yalnızca 1 defa değiştirilebilir.
+Sadece 1 Ekim - 31 Aralık aralığında.
+Tarih dışında değişiklik backend tarafından ENGELLENİR.
+```
 
 ---
 
@@ -317,7 +289,9 @@ sonuç raporu tek sezonsal zaman serisine birleşir
 **Uçuş Görevi:** Field boundary üzerinden görev dosyası üretilir (KML/KMZ/WPML). Pilot DJI Pilot 2 ile içe aktarıp standard mapping görevini başlatır.
 
 **Görev Dosyası Adlandırma Standardı:**
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```
+{MissionID}_{ParcelRef}_{YYYYMMDD}.kmz
+```
 (Dosya adında PII bulunmaz; MissionID dosya adında ve metadata içinde yer alır)
 
 **İşlenmiş Çıktılar:** DJI Terra (Agriculture Module) veya Pix4Dfields ile üretilen GeoTIFF standart kabul edilir.
@@ -330,30 +304,18 @@ sonuç raporu tek sezonsal zaman serisine birleşir
 
 ## [KR-017] YZ Modeli ile Analiz (Kanonik: İzolasyon + Tek Yönlü Akış + Job Semantiği)
 
-Bu KR, YZ analiz hattının **şemsiye** tanımıdır. Aşağıdaki KR’ler KR‑017’nin **operasyonel ayrıştırmasıdır**:
-- **[KR-070]**: Worker izolasyonu (inbound kapalı) + egress allowlist (network policy)
-- **[KR-071]**: One-way data flow + allowlist’in doğru yeri (Ingress) + mTLS cihaz kimliği
-- **[KR-072]**: Dataset lifecycle + chain-of-custody (manifest/hash/signature/verification) — “hileyi ispat” katmanı
-- **[KR-073]**: Untrusted file handling + AV1/AV2 + sandbox dönüşüm + quarantine
-
 [ZORUNLU]
-- AnalysisJob kimliği: **FieldID + CropType + MissionID (varsa)**; **PII taşınmaz**
-- Bitkiye özel YZ modeli routing (yönlendirme) ile otomatik seçilir. Bu karar; **MissionID, FieldID ve bitki türü** ile kayıt altına alınır (`model_id`, `model_version`).
+- AnalysisJob açılırken kimlik: **FieldID + CropType + MissionID (varsa)**; **PII taşınmaz**
+- Bitkiye özel YZ modeli routing (yönlendirme) ile otomatik seçilir. Bu karar; **MissionID, FieldID ve bitki türü** ile kayıt altına alınır (model_id / model_version).
 - Pilot tarafında görünen görev bilgisi: **MissionID, il/ilçe/mahalle-köy, ada/parsel (ParcelRef), bitki türü, hedef tarama penceresi, teslim son tarihi**. **Çiftçi adı/telefonu gösterilmez**
-- Hafıza kartları yerel istasyonda güvenlik kontrollerinden (**[KR-072]**, **[KR-073]**) geçmeden analize girmez: hash manifest + AV tarama + karantina kararları + allowlist uzantılar.
-- EdgeKiosk/istasyon tarafında **model çalıştırma yoktur** (model hırsızlığı riskine karşı).
-- Worker (YZ/processing) **inbound istek kabul etmez** (**[KR-070]**); job yalnızca dispatch/queue ile alınır. Web (PWA) ve public backend Worker ağına **doğrudan erişemez**.
-- Worker, **[KR-018 / KR-082]** kalibrasyon “hard gate” şartı sağlanmadan işi kabul etmez (`requires_calibrated=true`) ve dataset kanıt zinciri doğrulanmadan çalıştırmaz (**[KR-072]**).
-- Sonuçlar **kesinlikle tek yönlü** yayımlanır (**[KR-071]**): **FieldID + CropType + katmanlar + skor/uyarı** → sonuç servisi → web (PWA).
-- Erişim denemeleri/deny olayları ve kritik adımlar audit/WORM log’a düşer (bkz. **BÖLÜM 3**).
+- Hafıza kartları yerel istasyonda güvenlik kontrollerinden (hash manifest, virüs tarama, allowlist uzantılar, karantina) geçmeden analize girmez
+- EdgeKiosk/istasyon tarafında **model çalıştırma yoktur** (model hırsızlığı riskine karşı)
+- Worker (YZ/processing) **inbound istek kabul etmez**; job yalnızca dispatch/queue ile alınır. Web (PWA) ve public backend Worker ağına **doğrudan erişemez** (inbound kapalı)
+- Worker, **[KR-018 / KR-082]** kalibrasyon “hard gate” şartı sağlanmadan işi kabul etmez (`requires_calibrated=true`)
+- Sonuçlar **kesinlikle tek yönlü** yayımlanır: **FieldID + CropType + katmanlar + skor/uyarı** → sonuç servisi → web (PWA)
+- Erişim denemeleri/deny olayları ve kritik adımlar audit/WORM log’a düşer (bkz. **BÖLÜM 3**)
 
-### KR-017 Kabul Testleri (E2E)
-- Edge’de model çalıştırma denemesi → build/CI policy ile **yasak** (repo’da model ağırlıkları bulunamaz)
-- Worker’a inbound HTTP denemesi → **başarısız** (policy deny)
-- Calibrated olmayan dataset ile job → Worker **reddeder**
-- Manifest hash mismatch → dataset **REJECTED_QUARANTINE**
-
-**İlgili maddeler:** [KR-070], [KR-071], [KR-072], [KR-073], [KR-016], [KR-018 / KR-082], [KR-063], [KR-066], [KR-040-043], EK-SOP-SEC, BÖLÜM 3, BÖLÜM 4
+**İlgili maddeler:** [KR-016], [KR-018 / KR-082], [KR-063], [KR-066], [KR-040-043], EK-SOP-SEC, BÖLÜM 3, BÖLÜM 4
 
 ---
 ## [KR-018 / KR-082] RADIOMETRY - Tam Radyometrik Kalibrasyon Zorunluluğu (Radiometric Calibration: ışık/sensör etkilerini düzeltme)
@@ -484,7 +446,28 @@ Bu KR, YZ analiz hattının **şemsiye** tanımıdır. Aşağıdaki KR’ler KR�
 
 **Veri Modeli:**
 
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```sql
+create table subscriptions (
+  subscription_id uuid primary key,
+  farmer_user_id uuid not null,
+  field_id uuid not null,
+  crop_type text not null,
+  analysis_type text not null,
+  interval_days int not null check (interval_days > 0),
+  start_date date not null,
+  end_date date not null,
+  next_due_at timestamptz not null,
+  status text not null check (status in ('PENDING_PAYMENT','ACTIVE','PAUSED','CANCELLED')),
+  price_snapshot_id uuid not null,
+  payment_intent_id uuid null references payment_intents(payment_intent_id),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index idx_subscriptions_due on subscriptions(status, next_due_at);
+create index idx_subscriptions_field on subscriptions(field_id, status);
+create index idx_subscriptions_payment_intent on subscriptions(payment_intent_id);
+```
 
 **Scheduler Kuralı:**
 1. Her gün/saat cron job çalışır
@@ -494,7 +477,12 @@ Bu KR, YZ analiz hattının **şemsiye** tanımıdır. Aşağıdaki KR’ler KR�
 5. Duplicate önlemek için `FOR UPDATE SKIP LOCKED` kullanılır
 
 **Scheduler SQL:**
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```sql
+select subscription_id
+from subscriptions
+where status='ACTIVE' and next_due_at <= now()
+for update skip locked;
+```
 
 **API Endpoint'leri:**
 - `POST /subscriptions` — yeni abonelik oluştur
@@ -511,13 +499,60 @@ Bu KR, YZ analiz hattının **şemsiye** tanımıdır. Aşağıdaki KR’ler KR�
 
 **Veri Modeli:**
 
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```sql
+create table missions (
+  mission_id uuid primary key,
+  field_id uuid not null,
+  subscription_id uuid null references subscriptions(subscription_id),
+  payment_intent_id uuid null references payment_intents(payment_intent_id),
+  requested_by_user_id uuid not null,
+  crop_type text not null,
+  analysis_type text not null,
+  status text not null check (status in (
+    'PLANNED','ASSIGNED','ACKED','FLOWN','UPLOADED','ANALYZING','DONE','FAILED','CANCELLED'
+  )),
+  -- SLA zaman damgaları
+  planned_at timestamptz null,
+  due_at timestamptz null,
+  flown_at timestamptz null,
+  uploaded_at timestamptz null,
+  analyzed_at timestamptz null,
+  price_snapshot_id uuid not null,
+  created_at timestamptz not null default now()
+);
+
+create index idx_missions_status_due on missions(status, due_at);
+create index idx_missions_field_created on missions(field_id, created_at desc);
+create index idx_missions_subscription on missions(subscription_id, created_at desc);
+create index idx_missions_payment_intent on missions(payment_intent_id);
+
+-- Mission plan / rota dosyası (KML/KMZ/WPML)
+create table mission_route_files (
+  mission_id uuid primary key references missions(mission_id),
+  parcel_ref text not null,
+  route_file_type text not null check (route_file_type in ('KML','KMZ','WPML')),
+  route_file_version text null,
+  route_file_hash_sha256 text null,
+  created_at timestamptz not null default now()
+);
+
+create index idx_route_files_parcel on mission_route_files(parcel_ref);
+```
 
 **Status Geçişleri:**
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```
+PLANNED → ASSIGNED → ACKED → FLOWN → UPLOADED → ANALYZING → DONE
+                                                          ↘ FAILED
+                                                          ↘ CANCELLED
+```
 
 **Pilot Inbox (Bekleyen Görevler):**
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```sql
+select mission_id, field_id, crop_type, analysis_type, planned_at, due_at, status
+from missions
+where status in ('PLANNED','ASSIGNED','ACKED')
+order by due_at nulls last, created_at asc;
+```
 
 **Mission - Subscription İlişkisi:**
 - `subscription_id` null ise: tek seferlik analiz
@@ -531,13 +566,58 @@ Bu KR, YZ analiz hattının **şemsiye** tanımıdır. Aşağıdaki KR’ler KR�
 
 **Veri Modeli:**
 
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```sql
+create table feedback_records (
+  feedback_id uuid primary key,
+  review_id uuid not null,
+  mission_id uuid not null,
+  model_id text not null,
+  verdict text not null check (verdict in ('confirmed','corrected','rejected','needs_more_expert')),
+  corrected_class text null,
+  notes text null,
+  time_spent_seconds int null,
+  training_grade text not null check (training_grade in ('A','B','C','D','REJECT')),
+  grade_reason text null,
+  expert_confidence numeric(4,3) null,
+  image_quality numeric(4,3) null,
+  no_conflict boolean null,
+  created_at timestamptz not null default now()
+);
+
+create index idx_feedback_grade on feedback_records(training_grade, created_at desc);
+create index idx_feedback_mission_created on feedback_records(mission_id, created_at desc);
+```
 
 **Uzman Verdict Payload (API):**
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```json
+{
+  "verdict": "confirmed | corrected | rejected | needs_more_expert",
+  "corrected_class": "string (verdict=corrected ise zorunlu)",
+  "notes": "string (corrected/rejected ise zorunlu)",
+  "time_spent_seconds": 123
+}
+```
 
 **RabbitMQ Mesaj Şeması (`ai.feedback.v1`):**
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```json
+{
+  "schema_version": "ai.feedback.v1",
+  "feedback_id": "uuid",
+  "mission_id": "uuid",
+  "model_id": "string",
+  "crop_type": "pamuk",
+  "analysis_type": "disease",
+  "verdict": "corrected",
+  "corrected_class": "verticillium_wilt",
+  "training_grade": "A",
+  "grade_reason": "high_conf + high_quality",
+  "asset_refs": {
+    "rgb_uri": "s3://.../rgb.tif",
+    "ms_uri": "s3://.../ms.tif"
+  },
+  "created_at": "2026-01-27T00:00:00Z"
+}
+```
 
 **Expert_reviews vs Feedback_records:**
 - `expert_reviews` → Uzman portal UI için (review assignment, status tracking)
@@ -556,24 +636,61 @@ Bu KR, YZ analiz hattının **şemsiye** tanımıdır. Aşağıdaki KR’ler KR�
 **Schema:** `training.feedback.cls.v1`  
 **Format:** Her satır bir JSON örneği
 
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```json
+{"schema_version":"training.feedback.cls.v1","feedback_id":"...","mission_id":"...","crop_type":"pamuk","analysis_type":"disease","model_id":"m1","model_pred":"fusarium_wilt","model_conf":0.68,"expert_verdict":"corrected","corrected_class":"verticillium_wilt","training_grade":"A","grade_reason":"corrected+high_conf","rgb_uri":"s3://.../rgb.tif","ms_uri":"s3://.../ms.tif","created_at":"2026-01-27T00:00:00Z"}
+```
 
 ### Format 2: GeoJSON (Segmentation/Alan Verileri)
 
 **Dosya adı:** `training_feedback_geo_v1.geojson`  
 **Schema:** `training.feedback.geo.v1`
 
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```json
+{
+  "type": "FeatureCollection",
+  "schema_version": "training.feedback.geo.v1",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "feedback_id": "...",
+        "mission_id": "...",
+        "crop_type": "pamuk",
+        "analysis_type": "disease",
+        "training_grade": "B",
+        "verdict": "confirmed"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[29.0,41.0],[29.1,41.0],[29.1,41.1],[29.0,41.1],[29.0,41.0]]]
+      }
+    }
+  ]
+}
+```
 
 ### Admin Export Endpoint
 
 **Endpoint:** `POST /admin/training/export`
 
 **Request:**
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```json
+{
+  "format": "JSONL_CLS_V1 | GEOJSON_V1",
+  "from": "2026-01-01",
+  "to": "2026-01-31",
+  "min_grade": "B"
+}
+```
 
 **Export SQL:**
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```sql
+select *
+from feedback_records
+where created_at::date between :from and :to
+  and training_grade in ('A','B')  -- min_grade parametresine göre
+order by created_at asc;
+```
 
 **Schema Versiyonlama:**
 - v1.x: geriye uyumlu eklemeler (optional field)
@@ -649,11 +766,73 @@ Bu KR, YZ analiz hattının **şemsiye** tanımıdır. Aşağıdaki KR’ler KR�
 
 ### 4) Veri Modeli (PostgreSQL)
 
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```sql
+-- Payment intent: hedefi Mission veya Subscription olabilir
+create table payment_intents (
+  payment_intent_id uuid primary key,
+
+  payer_user_id uuid not null,
+  coop_id uuid null,
+
+  target_type text not null check (target_type in ('MISSION','SUBSCRIPTION')),
+  target_id uuid not null,
+
+  amount_kurus bigint not null check (amount_kurus > 0),
+  currency text not null default 'TRY',
+
+  method text not null check (method in ('CREDIT_CARD','IBAN_TRANSFER')),
+  status text not null check (status in ('PAYMENT_PENDING','PAID','REJECTED','EXPIRED','CANCELLED','REFUNDED')),
+
+  payment_ref text not null unique,     -- örn: PAY-20260129-4F8K2Q
+  price_snapshot_id uuid not null,      -- immutable pricing snapshot
+
+  -- Kredi kartı tarafı (opsiyonel; kart bilgisi asla tutulmaz)
+  provider text null,                   -- iyzico/paytr/...
+  provider_session_id text null,
+  provider_payment_id text null,
+
+  -- Havale dekontu (platform DB PII tutmaz)
+  receipt_blob_id text null,            -- object store referansı
+  receipt_meta jsonb null,              -- {"source":"email","message_id_hash":"..."} (PII içermez)
+
+  -- Manuel onay / iade / iptal
+  approved_by_admin_user_id uuid null,
+  approved_at timestamptz null,
+  paid_at timestamptz null,
+
+  rejected_at timestamptz null,
+  rejected_reason text null,
+
+  cancelled_at timestamptz null,
+  cancelled_reason text null,
+
+  refunded_at timestamptz null,
+  refund_amount_kurus bigint null,
+  refund_reason text null,
+
+  expires_at timestamptz null,
+
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index idx_payment_intents_target on payment_intents(target_type, target_id);
+create index idx_payment_intents_status on payment_intents(status, created_at desc);
+create index idx_payment_intents_payer on payment_intents(payer_user_id, created_at desc);
+```
 
 **Mission / Subscription Bağlantısı (şema güncellemesi)**
 
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```sql
+-- Tek seferlik Mission'lar payment_intent_id taşır; subscription üzerinden gelen Mission'lar null olabilir
+alter table missions add column payment_intent_id uuid null references payment_intents(payment_intent_id);
+create index idx_missions_payment_intent on missions(payment_intent_id);
+
+-- Subscription ödeme bekleme durumu + payment intent ilişkisi
+-- Not: status seti KR-027 ile güncellenir (PENDING_PAYMENT eklenir)
+alter table subscriptions add column payment_intent_id uuid null references payment_intents(payment_intent_id);
+create index idx_subscriptions_payment_intent on subscriptions(payment_intent_id);
+```
 
 ### 5) API Endpoint’leri (Platform)
 
@@ -847,7 +1026,9 @@ Katmanlar web (PWA) arayüzünde aynı Layer Registry üzerinden tanımlanır. R
 - **Expected Area:** FieldBoundary veya Mission flightplan sınırı (m²)
 - **Observed Area:** GeoTIFF/ortomozaik kapsama-izi (kapsama) poligonu (m²)
 
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```python
+coverage_ratio = Area(intersection(observed, expected)) / Area(expected)
+```
 
 **Hakediş kuralı:**
 - `coverage_ratio >= 0.95` → TAM ödeme
@@ -866,150 +1047,16 @@ Katmanlar web (PWA) arayüzünde aynı Layer Registry üzerinden tanımlanır. R
 
 ---
 
-## [KR-070] YZ Analiz İzolasyonu (Worker Isolation & Egress Policy)
+## [KR-070] YZ Analiz İzolasyonu
+**Amaç:** YZ (Worker) altyapısının, web/platform tarafından “sorgulanabilir bir servis” gibi kullanılmasını engellemek; model/ham veri yüzeyini küçültmek.
 
-**Amaç:** YZ (Worker) altyapısının web/platform tarafından “sorgulanabilir bir servis” gibi kullanılmasını engellemek; model/ham veri yüzeyini küçültmek; sahada ve merkezde güvenliği “varsayılan reddet” (deny-by-default) ile sabitlemek.
+[ZORUNLU]
+- YZ analiz altyapısı **inbound istek kabul etmez**; yalnızca paket/dispatch ile job alır (bkz. **[KR-017]**)
+- Web (PWA) ve public backend, Worker ağına **doğrudan erişemez** (ayrı ağ segmenti + mTLS + allowlist)
+- EdgeKiosk/istasyon tarafında **model çalıştırma yoktur** (model hırsızlığı riskini azaltmak için)
+- Model/servis erişimleri ve deny olayları audit/WORM log’a düşer (bkz. **BÖLÜM 3**)
 
-### Zorunlu Kurallar (Hard)
-1) **Inbound kapalı:** Worker hiçbir koşulda “ingest/upload” HTTP endpoint’i barındırmaz; dışarıdan bağlantı kabul etmez. Job alma yalnızca **dispatch/queue + pull/poll** ile olur.  
-2) **Egress allowlist:** Worker yalnızca izinli hedeflere **outbound** bağlanabilir; internet geneli kapalıdır.  
-   - Object Storage (S3-uyumlu: MinIO/Ceph vb.) → **read-only** (Worker rolü)  
-   - Dispatch/Queue → **consume-only** (Worker rolü)  
-   - Observability (log/metric/tracing) → **append-only**  
-3) **Ağ segmentasyonu:** Web (PWA) ve public backend, Worker ağına **doğrudan erişemez**. Platform bile Worker’a “push” bağlantısı açamaz (platform→worker deny).  
-4) **Kimlik & şifreleme:** Worker’ın izinli hedeflere erişimi **mTLS (karşılıklı TLS)** + servis kimliği ile yapılır; erişimler kısa ömürlü yetki (token/STS) ile sınırlanır.  
-5) **Hard gate koşulları:** Worker job çalıştırmadan önce şunları doğrular:  
-   - `requires_calibrated=true` ve kalibrasyon kanıtı **[KR-018 / KR-082]**  
-   - dataset kanıt zinciri: manifest + hash + (varsa) signature + AV raporları (**[KR-072]**, **[KR-073]**)  
-6) **Operasyonel erişim:** Yönetim erişimi yalnızca bastion/jump host + MFA + JIT (Just‑In‑Time: kısa süreli erişim) ile; yönetim portları public internete açılmaz.
-
-### Kanonik Ağ Politikası Matrisi (Policy Matrix)
-- Platform → Worker: **DENY** (TCP/HTTP yok)  
-- Web/PWA → Worker: **DENY**  
-- Worker → Object Storage: **ALLOW (outbound only, allowlist, read-only)**  
-- Worker → Queue: **ALLOW (outbound only, consume-only)**  
-- Worker → Platform Results API: **ALLOW (outbound only, mTLS)**  
-- Worker → Internet: **DENY (default)**
-
-### Log / Audit Kanıtı (WORM)
-- `SECURITY.DENY` (policy deny / mTLS_fail / allowlist_fail / signature_fail)  
-- `JOB.REJECT` (precondition fail)  
-- `DATASET.REJECTED_QUARANTINE` (hash mismatch / malware / QC fail)  
-Tüm olaylar correlation_id ile zincirlenir; WORM/immutable log (silinemez) varsayılır.
-
-### SDLC Kabul Kriterleri (Test)
-- **Net test:** Platform’dan Worker subnet’e TCP denemesi → **başarısız**  
-- **E2E test:** “calibrated yok” dataset ile job → Worker **reddeder**  
-- **E2E test:** manifest hash mismatch → dataset **quarantine**  
-- **CI gate:** contracts/examples validate, breaking-change detector → **geçmeden merge yok**
-
-**İlgili maddeler:** [KR-066], [KR-017], [KR-018], [KR-040–043], [KR-072], [KR-073], EK-SOP-SEC, BÖLÜM 3, BÖLÜM 4
----
-
-## [KR-071] Tek Yönlü Veri Akışı (One-way data flow) + Allowlist Yerleşimi
-
-**Amaç:** Ham verinin (RAW/CALIBRATED) web/public platform katmanına çıkmasını engellemek; Worker’a inbound kapı açmadan veri akışını tek yönlü sabitlemek; allowlist’i yanlış yere koyup “güvenlik yanılsaması” üretmemek.
-
-### Kanonik Akış (Zorunlu)
-1) **EdgeKiosk → Platform/Ingress:** HTTPS 443 üzerinden, **mTLS cihaz kimliği (client cert)** ile.  
-   - IP allowlist sadece **Ingress kapısında** (WAF/API Gateway/Reverse Proxy) **ikincil katman** olarak uygulanır.  
-2) **Platform → Object Storage + Queue:** Platform hamı public API’de servis etmez; ham veri storage’da saklanır, iş job/queue ile orkestre edilir.  
-3) **Worker → (pull) Queue/Storage:** Worker işi kuyruktan alır; dataset’i storage’dan okur; analiz eder.  
-4) **Worker → Platform (sonuç):** Worker yalnızca **türev sonuç** (AnalysisResult / layer outputs) yazar; ham veri geri dönmez.  
-5) **Web/PWA → Platform:** Web sadece sonuç okur; ham veri yok.
-
-### Allowlist Yerleşimi (Gerçek Dünya Gerekçesi)
-- IP allowlist **kimlik değildir**: saha şartlarında dinamik IP, CGNAT, operatör NAT, modem değişimi, farklı uplink’ler yaygındır.  
-- Bu nedenle allowlist “kimlik doğrulama” yerine geçemez; **mTLS cihaz kimliği** ana kontroldür.  
-- Allowlist yalnızca “giriş yüzeyini daraltma” (attack surface reduction) amaçlıdır.
-
-### Cihaz Kimliği ve Sertifika Yönetimi (mTLS)
-- EdgeKiosk cihazları kayıt altındadır: `station_id`, `device_id`, sertifika seri no, iptal/rotasyon prosedürü.  
-- Sertifika iptali (revocation) ve yenileme (rotation) saha operasyon SOP’sinde zorunludur.
-
-### SDLC Kabul Kriterleri
-- Allowlist dışı IP → ingress **deny + audit**  
-- Sertifikasız/yanlış sertifikalı istek → **deny + audit**  
-- Worker’a doğrudan HTTP çağrısı denemesi → **deny (policy)**
-
-**İlgili maddeler:** [KR-017], [KR-070], [KR-072], [KR-073], EK-SOP-SEC
----
-
-## [KR-072] Dataset Lifecycle (Veri Yaşam Döngüsü) + Kanıt Zinciri (Chain of Custody) — Contract-First
-
-**Amaç:** “Veri akışı sözleşmesiz” kalmasın; saha/merkez arasında tamper (kurcalama) ve malware (zararlı) tartışmaları teknik kanıtla çözülsün; Worker yalnızca kanıtlı ve kalibre edilmiş dataset’lerle çalışsın.
-
-### Dataset = Birinci Sınıf Domain Nesnesi
-Ham görüntü bir “dosya yığını” değil, sistemde **Dataset**’tir. Dataset bir durum makinesidir ve geçişler event/audit ile ispatlanır.
-
-**Kanonik durumlar (minimum):**
-- `RAW_INGESTED` (ham alındı, karantina)
-- `RAW_SCANNED_EDGE_OK` (AV1 geçti)
-- `RAW_HASH_SEALED` (manifest + hash mühürlendi)
-- `CALIBRATED` (**[KR-018] hard gate**)
-- `CALIBRATED_SCANNED_CENTER_OK` (AV2 + verification OK)
-- `DISPATCHED_TO_WORKER`
-- `ANALYZED`
-- `DERIVED_PUBLISHED` (platforma sadece türev/sonuç)
-- `ARCHIVED` (soğuk depolama)
-- Hata/şüphe: `REJECTED_QUARANTINE`
-
-### Kanıt Zinciri (Zorunlu Artefact’ler)
-Her Dataset için aşağıdaki artefact’ler üretilecek ve ilişkilendirilecek:
-- `dataset_manifest.json` (dosya listesi, boyut, zaman, drone_id, flight_id, mission_id, station_id)  
-- `manifest.sha256` (manifest hash’i)  
-- `signature.sig` (opsiyonel ama önerilen: cihaz anahtarıyla imza)  
-- `scan_report_edge.json` (AV1)  
-- `scan_report_center.json` (AV2)  
-- `verification_report.json` (manifest’teki hash’ler ile merkezin hesapladığı hash’ler karşılaştırması)  
-- `calibration_result.json` + `qc_report.json` (kalibrasyon + kalite kanıtı)
-
-**Kurcalama ispatı (tamper proof):** Edge manifest’i ile merkezde hesaplanan hash’ler uyuşmazsa → `REJECTED_QUARANTINE` + kanıt.
-
-### Transfer Batch (Saha Gerçeği)
-Bağlantı zayıf/kesintili olabileceği için transfer **chunk/resumable** (parça/parça devam edebilir) tasarlanır. `transfer_batch` ile:
-- hangi parçalar gitti/kaldi,
-- hash doğrulama,
-- tekrar deneme (retry),
-- kesintiden devam (resume)
-kanıtlanır.
-
-### Contract-First Zorunluluğu
-Bu bölüm “doküman” değil, **contracts**’ta JSON Schema’dır (bkz. `tarlaanaliz-contracts`).  
-`Dataset`, `DatasetManifest`, `ScanReport`, `VerificationReport`, `CalibrationResult`, `QCReport`, `TransferBatch` şemaları kanoniktir (**[KR-081]**).
-
-### SDLC Kabul Kriterleri
-- Hash mismatch senaryosu otomatik test: “1 byte değiştir” → merkez verification **FAIL**  
-- “calibrated yok” → job yaratma/çalıştırma **REJECT**  
-- Contracts CI: örnek JSON’lar şemaya uymazsa **merge yok**
-
-**İlgili maddeler:** [KR-018], [KR-070], [KR-071], [KR-073], [KR-081]
----
-
-## [KR-073] Untrusted File Handling + Malware (AV1/AV2) + Güvenli Dönüştürme
-
-**Amaç:** Ham görüntü dosyalarının (TIFF/JPEG/RAW vb.) saldırı yüzeyi olmasını engellemek; iki aşamalı tarama ve güvenli dönüştürme ile hem yereli korumak hem de “hile yapıldı mı?” sorusuna kanıt üretmek.
-
-### Untrusted Input Prensibi
-- Ham dosyalar **her zaman untrusted** kabul edilir.  
-- Parse/convert işlemleri izole sandbox içinde yapılır; worker ve platform public katmanları hamı servis etmez.  
-- “Güvenli türev” (tiles/thumbnails/COG) üretimi merkezde, ayrı sandbox işçisinde yapılır.
-
-### İki Aşamalı Malware Taraması (Zorunlu)
-- **AV1 (EdgeKiosk):** Yerel istasyonu korur; bariz zararlıyı erken yakalar. Çıktı: `scan_report_edge.json`.  
-- **AV2 (Merkez Security Gateway / Ingestion):** İkinci kontrol + kurcalama ispatı zincirinin parçası. Çıktı: `scan_report_center.json`.  
-- **Verification:** AV2 aşamasında ayrıca hash doğrulaması yapılır (`verification_report.json`) (**[KR-072]**).
-
-### Quarantine Politikası
-- AV fail, hash mismatch, QC fail gibi durumlarda dataset `REJECTED_QUARANTINE`’a alınır.  
-- Quarantine kararları `quarantine_event` ile event/audit’e yazılır.
-
-### SDLC Kabul Kriterleri
-- (Lab) EICAR gibi test vektörü ile AV tetiklenmesi  
-- “AV1 PASS ama AV2 FAIL” senaryosu → dataset quarantine + audit kanıtı  
-- “parse crash” olmamalı: sandbox içinde kontrollü hata ve izolasyon
-
-**İlgili maddeler:** [KR-070], [KR-071], [KR-072]
+**İlgili maddeler:** [KR-066], [KR-017], [KR-040-043], EK-SOP-SEC, BÖLÜM 3, BÖLÜM 4
 ---
 
 ## [KR-080] Ana İş Akışları için Teknik Kurallar
@@ -1049,11 +1096,89 @@ Bu bölümde iki kanonik payload tanımı dokümana gömülüdür ve `shared/con
 
 ### KR-081.1 AnalysisJob — JSON Schema (draft 2020-12)
 
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tarlaanaliz.example/contracts/analysis_job.v1.schema.json",
+  "title": "AnalysisJob",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "job_id", "created_at", "field", "crop", 
+    "mission", "capture_set", "inputs", "processing", "pricing_snapshot", "status"
+  ],
+  "properties": {
+    "schema_version": { "const": "analysis_job.v1" },
+    "job_id": { "type": "string", "pattern": "^[0-9a-fA-F-]{36}$" },
+    "idempotency_key": { "type": "string", "maxLength": 128 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "field": {
+      "type": "object",
+      "required": ["field_id", "area_donum", "parcel_ref"],
+      "properties": {
+        "field_id": { "type": "string", "maxLength": 64 },
+        "parcel_ref": { "type": "string", "maxLength": 128 },
+        "area_donum": { "type": "number", "minimum": 0 }
+      }
+    },
+    "crop": {
+      "type": "object",
+      "required": ["crop_code", "crop_name"],
+      "properties": {
+        "crop_code": { "type": "string", "maxLength": 32 },
+        "crop_name": { "type": "string", "maxLength": 64 }
+      }
+    },
+    "mission": {
+      "type": "object",
+      "required": ["mission_id", "flight_date", "drone"],
+      "properties": {
+        "mission_id": { "type": "string", "maxLength": 64 },
+        "flight_date": { "type": "string", "format": "date" }
+      }
+    }
+  }
+}
+```
 
 ### KR-081.2 AnalysisResult — JSON Schema
 
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tarlaanaliz.example/contracts/analysis_result.v1.schema.json",
+  "title": "AnalysisResult",
+  "type": "object",
+  "required": ["schema_version", "result_id", "job_id", "created_at", "status"],
+  "properties": {
+    "schema_version": { "const": "analysis_result.v1" },
+    "result_id": { "type": "string", "pattern": "^[0-9a-fA-F-]{36}$" },
+    "job_id": { "type": "string", "pattern": "^[0-9a-fA-F-]{36}$" },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["finding_code", "label"],
+        "properties": {
+          "finding_code": { "type": "string", "maxLength": 64 },
+          "label": { "type": "string", "maxLength": 256 },
+          "severity": { "type": "number", "minimum": 0, "maximum": 1 },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "area_donum": { "type": "number", "minimum": 0 }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["overall_health_index", "notes"],
+      "properties": {
+        "overall_health_index": { "type": "number", "minimum": 0, "maximum": 1 },
+        "notes": { "type": "string", "maxLength": 4000, "description": "YZ analizidir; ilaçlama kararı vermez." }
+      }
+    }
+  }
+}
+```
 
 **Sürümleme kuralı (SemVer):**
 - `v1.x`: geriye uyumlu (backward compatible) eklemeler serbest (optional field eklenebilir)
@@ -1082,7 +1207,9 @@ Bu bölümde iki kanonik payload tanımı dokümana gömülüdür ve `shared/con
 **Pratik standart:** KMZ paketinin içinde WPML ile tanımlı waypoint/waylines görev verisi bulunur (wpmz/template.kml + wpmz/waylines.wpml).
 
 **Görev dosyası adlandırma:**
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```
+{MissionID}_{ParcelRef}_{YYYYMMDD}.kmz
+```
 (Dosya adında PII bulunmaz; MissionID dosya adında ve metadata içinde yer alır)
 
 **Seed-KMZ önerisi:** Pilot 2 ile bir kez "doğru ayarlı" örnek görev oluşturulup export edilen KMZ şablon kabul edilir; sistem sadece sınır/parametre alanlarını günceller. Bu, sürüm farklarında kırılmayı azaltır.
@@ -1198,7 +1325,34 @@ PII minimizasyonu gereği loglar **PII içermez**; `actor_id_hash` gibi tek-yön
 
 ### Zorunlu Alanlar (JSONL — her satır 1 olay)
 
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```json
+{
+  "ts": "2026-01-27T10:15:30.123+03:00",
+  "level": "INFO",
+  "service": "station_kiosk | backend | ai_worker | web_pwa",
+  "env": "prod | stage | dev",
+  "app_version": "semver",
+  "event_type": "INGEST | AUTH | RBAC | PRICING | JOB | RESULT | SECURITY | SYSTEM",
+  "event_action": "CREATE | VALIDATE | UPLOAD | QUEUE | START | FINISH | DENY | UPDATE",
+  "outcome": "SUCCESS | FAIL",
+  "correlation_id": "corr_8f3a1e0c6f0d4e3d",
+  "trace_id": "w3c_trace_id_optional",
+  "span_id": "w3c_span_id_optional",
+  "actor_type": "farmer | pilot | il_operator | admin | system",
+  "actor_id_hash": "hash/opaque-id",
+  "device_id": "kiosk_device_id",
+  "field_id": "FieldID",
+  "mission_id": "MissionID",
+  "batch_id": "BatchID",
+  "card_id": "CardID",
+  "station_ingest_run_id": "SIR-...",
+  "job_id": "uuid",
+  "http": {"method": "POST", "path": "/api/v1/ingest", "status": 201},
+  "latency_ms": 123,
+  "error": {"code": "HASH_MISMATCH", "message": "short-safe"},
+  "pii": false
+}
+```
 
 **Kurallar:**
 - `correlation_id` **her zaman zorunlu** ve tüm servislerde aynen taşınır
@@ -1239,16 +1393,27 @@ WORM/immutable audit olayları:
 | Model zehirleme | Kötü veri girişi | Sahte etiket/uzman | Expert review + provenance + hash zinciri | Review trail + dataset manifest |
 | Job Queue | Replay / duplicate job | Idempotency eksikliği | `idempotency_key` + dedupe | `JOB.DEDUPE` log + metrik |
 | Sonuç katmanları | Manipüle sonuç | Sonuç dosyası değiştirme | Sonuç artifact sha256 + imzalı paket | `RESULT.SIGNATURE_FAIL` |
-| Web/PWA | Hesap ele geçirme | PIN brute force | Rate limit, lockout, cihaz bazlı throttle | `AUTH.DENY` metrik + audit |
+| Mobil/Web | Hesap ele geçirme | PIN brute force | Rate limit, lockout, cihaz bazlı throttle | `AUTH.DENY` metrik + audit |
 
 ---
 
-### Repository İlişkileri (Özet)
-- Contracts (kanonik sözleşmeler): tek kaynak.
-- Platform/Edge/Worker: kontratlara uyar; CI/PR gate ile breaking-change engellenir.
+### Repository İlişkileri
 
-
-[EK: Kod/Şema örnekleri bu sürümden çıkarıldı. (Contracts repo’da kanonik)]
+```
+┌───────────────────────────────────────────┐
+│  tarlaanaliz-contracts (Source of Truth)                  │
+│  - API schemas, OpenAPI specs, enum definitions           │
+│  - Contract validation + breaking change detection        │
+└───────────────────────────────────────────┘
+           ↓ (git submodule)           ↓              ↓
+    ┌──────────┐        ┌──────────┐  ┌──────────┐
+    │   Platform   │         │   Worker   │   │     Edge    │
+    │  (Backend +  │←─RMQ─→│  (AI/ML)   │   │   (Kiosk)   │
+    │   Frontend)  │         │            │   │  (Offline)  │
+    └──────────┘        └──────────┘  └──────────┘
+           ↑                                            ↓
+           └────────────── HTTPS + mTLS ───────┘
+```
 
 
 ---
@@ -1259,7 +1424,7 @@ Bu bölüm, güvenlik kurallarını **tekrar etmek** için değil; SSOT içinde 
 
 - **Kimlik + brute-force korumaları:** [KR-050] + (testler: SC-SEC-01/02)
 - **RBAC ve PII ayrımı (KVKK):** [KR-063] + [KR-066]
-- **YZ izolasyonu / one-way akış + kanıt zinciri:** [KR-017] + [KR-070] + [KR-071] + [KR-072] + [KR-073]
+- **YZ izolasyonu / one-way akış:** [KR-017] (stub: [KR-070], kaldırıldı: [KR-071])
 - **Radyometrik kalibrasyon hard gate:** [KR-018] (alias: [KR-082])
 - **SDLC güvenlik kapıları + kabul kriterleri:** [KR-040]–[KR-043]
 - **Audit/WORM olay şeması + correlation_id:** BÖLÜM 3
