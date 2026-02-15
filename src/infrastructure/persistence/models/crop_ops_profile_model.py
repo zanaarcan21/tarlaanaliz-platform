@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 from sqlalchemy import Column, DateTime, Integer, text
 from sqlalchemy.dialects.postgresql import ENUM, UUID
@@ -54,36 +54,36 @@ class CropOpsProfileModel(_Base):
 
     __tablename__ = "crop_ops_profiles"
 
-    profile_id: uuid.UUID = Column(
+    profile_id: Any = Column(
         UUID(as_uuid=True),
         primary_key=True,
         server_default=text("gen_random_uuid()"),
     )
-    crop_type: str = Column(
+    crop_type: Any = Column(
         _crop_type_enum,
         nullable=False,
         unique=True,
     )
-    daily_capacity_donum: int = Column(
+    daily_capacity_donum: Any = Column(
         Integer,
         nullable=False,
         server_default=text("2750"),
     )
-    system_seed_quota: int = Column(
+    system_seed_quota: Any = Column(
         Integer,
         nullable=False,
         server_default=text("1500"),
     )
-    recommended_interval_days: int | None = Column(
+    recommended_interval_days: Any = Column(
         Integer,
         nullable=True,
     )
-    created_at: datetime = Column(
+    created_at: Any = Column(
         DateTime(timezone=True),
         nullable=False,
         server_default=text("now()"),
     )
-    updated_at: datetime = Column(
+    updated_at: Any = Column(
         DateTime(timezone=True),
         nullable=False,
         server_default=text("now()"),
@@ -95,9 +95,9 @@ class CropOpsProfileModel(_Base):
         Not: overage_tolerance DB'de saklanmaz; varsayilan deger kullanilir.
         """
         return CropOpsProfile(
-            crop_type=CropType(code=self.crop_type),
-            daily_capacity_donum=self.daily_capacity_donum,
-            system_seed_quota=self.system_seed_quota,
+            crop_type=CropType(code=cast(str, self.crop_type)),
+            daily_capacity_donum=cast(int, self.daily_capacity_donum),
+            system_seed_quota=cast(int, self.system_seed_quota),
             overage_tolerance=CropOpsProfile.DEFAULT_OVERAGE_TOLERANCE,
         )
 

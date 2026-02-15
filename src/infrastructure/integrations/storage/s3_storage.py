@@ -31,7 +31,7 @@ Notlar/SSOT: Tek referans: tarlaanaliz_platform_tree v3.2.2 FINAL.
 """
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 import boto3
 import structlog
@@ -141,7 +141,7 @@ class S3StorageIntegration(StorageService):
 
         try:
             response = self._client.get_object(Bucket=resolved_bucket, Key=key)
-            return response["Body"].read()
+            return cast(bytes, response["Body"].read())
         except ClientError as exc:
             if exc.response["Error"]["Code"] == "NoSuchKey":
                 raise KeyError(f"Blob bulunamadı: {resolved_bucket}/{key}") from exc

@@ -59,7 +59,7 @@ class TKGMMegsisWFSAdapter(ParcelGeometryProvider):
         )
 
     def _cache_key(self, parcel_ref: ParcelRef) -> str:
-        return parcel_ref.hash_key
+        return parcel_ref.unique_hash
 
     def _get_cached(self, parcel_ref: ParcelRef) -> Optional[ParcelGeometry]:
         """Cache'ten parsel geometrisi döner (TTL kontrolü ile)."""

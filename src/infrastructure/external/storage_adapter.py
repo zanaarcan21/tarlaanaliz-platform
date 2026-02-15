@@ -12,7 +12,7 @@ Retry: Transient hatalarda exponential backoff.
 from __future__ import annotations
 
 import hashlib
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 import boto3
 import structlog
@@ -96,7 +96,7 @@ class S3StorageAdapter(StorageService):
         logger.info("storage_download", bucket=bucket, key=key)
         try:
             response = self._client.get_object(Bucket=bucket, Key=key)
-            return response["Body"].read()
+            return cast(bytes, response["Body"].read())
         except ClientError as exc:
             if exc.response["Error"]["Code"] == "NoSuchKey":
                 raise KeyError(f"Blob bulunamadı: {bucket}/{key}") from exc

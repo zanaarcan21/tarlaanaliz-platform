@@ -8,7 +8,7 @@ from sqlalchemy.orm import declarative_base
 Base = declarative_base()
 
 
-class RescheduleRequestModel(Base):
+class RescheduleRequestModel(Base):  # type: ignore[misc, valid-type]
     __tablename__ = "subscription_reschedule_requests"
 
     id = Column(String(36), primary_key=True)

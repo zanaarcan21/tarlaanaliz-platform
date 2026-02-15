@@ -41,7 +41,7 @@ class AutoDispatcher:
         # - daily_capacity
         # - SLA priority
         decisions: List[DispatchDecision] = []
-        pilots_by_territory = {}
+        pilots_by_territory: dict[str, list[PilotLike]] = {}
         for p in pilots:
             pilots_by_territory.setdefault(p.territory_id, []).append(p)
 

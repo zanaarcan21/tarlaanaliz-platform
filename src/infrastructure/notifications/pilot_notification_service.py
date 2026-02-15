@@ -6,7 +6,7 @@ Bu servis, atama/reschedule/reassignment bildirimlerini tek merkezde toplar.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Protocol, Optional
+from typing import Any, Optional, Protocol
 
 
 class SmsGateway(Protocol):
@@ -14,7 +14,7 @@ class SmsGateway(Protocol):
 
 
 class WebsocketNotifier(Protocol):
-    def notify(self, user_id: str, event: str, payload: dict) -> None: ...
+    def notify(self, user_id: str, event: str, payload: dict[str, Any]) -> None: ...
 
 
 @dataclass

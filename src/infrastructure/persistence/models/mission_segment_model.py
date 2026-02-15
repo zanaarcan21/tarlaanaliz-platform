@@ -8,7 +8,7 @@ from sqlalchemy.orm import declarative_base
 Base = declarative_base()
 
 
-class MissionSegmentModel(Base):
+class MissionSegmentModel(Base):  # type: ignore[misc, valid-type]
     __tablename__ = "mission_segments"
 
     id = Column(String(36), primary_key=True)

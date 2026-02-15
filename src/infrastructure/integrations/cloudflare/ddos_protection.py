@@ -31,7 +31,7 @@ Notlar/SSOT: Tek referans: tarlaanaliz_platform_tree v3.2.2 FINAL.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 import httpx
 import structlog
@@ -528,7 +528,7 @@ class CloudflareDDoSAdapter(DDoSProtection):
                 response = await client.get("/user/tokens/verify")
                 if response.status_code == 200:
                     data = response.json()
-                    return data.get("success", False)
+                    return bool(data.get("success", False))
                 return False
         except (httpx.HTTPError, Exception):
             logger.warning("cf_health_check_failed")

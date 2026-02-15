@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 from shapely.geometry import MultiPolygon, Point, Polygon
 from shapely.geometry import mapping as shapely_mapping
@@ -95,12 +95,12 @@ class Geometry:
     @property
     def geom_type(self) -> str:
         """Geometri tipi (Polygon, MultiPolygon, Point)."""
-        return self._shape.geom_type
+        return cast(str, self._shape.geom_type)
 
     @property
     def area(self) -> float:
         """Geometri alanı (derece kare; kesin hesap için projeksiyon gerekir)."""
-        return self._shape.area
+        return float(self._shape.area)
 
     @property
     def centroid(self) -> tuple[float, float]:
@@ -111,15 +111,16 @@ class Geometry:
     @property
     def bounds(self) -> tuple[float, float, float, float]:
         """Sınır kutusu (minx, miny, maxx, maxy)."""
-        return self._shape.bounds
+        bounds = self._shape.bounds
+        return (float(bounds[0]), float(bounds[1]), float(bounds[2]), float(bounds[3]))
 
     def contains(self, other: Geometry) -> bool:
         """Bu geometri diğer geometriyi içeriyor mu?"""
-        return self._shape.contains(other._shape)
+        return bool(self._shape.contains(other._shape))
 
     def intersects(self, other: Geometry) -> bool:
         """Bu geometri diğer geometriyle kesişiyor mu?"""
-        return self._shape.intersects(other._shape)
+        return bool(self._shape.intersects(other._shape))
 
     def intersection(self, other: Geometry) -> Geometry:
         """İki geometrinin kesişimini döner."""
@@ -138,12 +139,12 @@ class Geometry:
         """
         if self._shape.area == 0:
             return 0.0
-        intersection_area = self._shape.intersection(other._shape).area
-        return intersection_area / self._shape.area
+        intersection_area = float(self._shape.intersection(other._shape).area)
+        return intersection_area / float(self._shape.area)
 
     def to_geojson(self) -> dict[str, Any]:
         """GeoJSON dict'e dönüştürür (RFC 7946)."""
-        return shapely_mapping(self._shape)
+        return cast(dict[str, Any], shapely_mapping(self._shape))
 
     def to_dict(self) -> dict[str, Any]:
         """Serileştirme için dict dönüşümü."""
@@ -151,7 +152,7 @@ class Geometry:
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Geometry):
-            return self._shape.equals(other._shape)
+            return bool(self._shape.equals(other._shape))
         return NotImplemented
 
     def __hash__(self) -> int:

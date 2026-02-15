@@ -26,7 +26,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Awaitable, Callable, Optional
+from typing import Any, Awaitable, Callable, Optional, cast
 
 import structlog
 
@@ -275,7 +275,7 @@ class HealthChecker:
         try:
             import redis.asyncio as aioredis
 
-            client = aioredis.from_url(
+            client = cast(Any, aioredis).from_url(
                 self._settings.redis_url,
                 socket_timeout=self._check_timeout,
             )

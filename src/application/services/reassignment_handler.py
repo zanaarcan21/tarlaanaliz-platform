@@ -12,8 +12,22 @@ from typing import Protocol, Sequence
 from ...core.domain.services.auto_dispatcher import AutoDispatcher, DispatchDecision
 
 
+class MissionLike(Protocol):
+    id: str
+    territory_id: str
+    scheduled_date: str
+    area_donum: int
+
+
+class PilotLike(Protocol):
+    id: str
+    territory_id: str
+    reliability_score: float
+
+
 class MissionRepo(Protocol):
-    def list_reassign_queue(self) -> Sequence[object]: ...
+    def list_reassign_queue(self) -> Sequence[MissionLike]: ...
+    def list_available_pilots(self) -> Sequence[PilotLike]: ...
     def mark_reassigned(self, mission_id: str, pilot_id: str) -> None: ...
 
 
@@ -24,8 +38,7 @@ class ReassignmentHandler:
 
     def run_once(self) -> Sequence[DispatchDecision]:
         missions = self.mission_repo.list_reassign_queue()
-        # TODO: fetch available pilots
-        pilots = []
+        pilots = self.mission_repo.list_available_pilots()
         decisions = self.auto_dispatcher.dispatch(missions, pilots)
         for d in decisions:
             self.mission_repo.mark_reassigned(d.mission_id, d.pilot_id)

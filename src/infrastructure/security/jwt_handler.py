@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import Any
+from typing import Any, cast
 
 from jose import JWTError, jwt
 
@@ -35,7 +35,7 @@ class JWTHandler:
         }
         if claims:
             payload.update(claims)
-        return jwt.encode(payload, self._settings.secret_key, algorithm=self._settings.algorithm)
+        return cast(str, jwt.encode(payload, self._settings.secret_key, algorithm=self._settings.algorithm))
 
     def verify_token(self, token: str) -> dict[str, Any]:
         try:
@@ -45,4 +45,4 @@ class JWTHandler:
 
         if not payload.get("sub"):
             raise ValueError("JWT token must include 'sub' claim")
-        return payload
+        return cast(dict[str, Any], payload)
