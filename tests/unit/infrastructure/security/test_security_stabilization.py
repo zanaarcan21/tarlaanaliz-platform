@@ -1,9 +1,13 @@
 # BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated.
 
+import pytest
+
 from src.infrastructure.security.encryption import EncryptionService
 from src.infrastructure.security.jwt_handler import JWTHandler, JWTSettings
 from src.infrastructure.security.query_pattern_analyzer import QueryPatternAnalyzer
 from src.infrastructure.security.rate_limit_config import parse_rate_limit_rules
+
+pytestmark = pytest.mark.unit
 
 
 def test_jwt_issue_and_verify_roundtrip() -> None:
