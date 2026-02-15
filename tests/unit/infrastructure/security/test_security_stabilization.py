@@ -36,3 +36,12 @@ def test_rate_limit_parser_and_query_scan() -> None:
     assert rules[0].requests == 10
     assert analyzer.scan("SELECT * FROM users WHERE id = 1").is_suspicious is False
     assert analyzer.scan("SELECT * FROM users WHERE id = 1 OR 1=1").is_suspicious is True
+
+
+def test_jwt_verify_rejects_invalid_audience() -> None:
+    handler = JWTHandler(JWTSettings(secret_key="secret", access_token_ttl_minutes=5, audience="tarlaanaliz-api"))
+
+    token = handler.issue_access_token(subject="user-1", claims={"aud": "different-audience"})
+
+    with pytest.raises(ValueError, match="Invalid JWT token"):
+        handler.verify_token(token)

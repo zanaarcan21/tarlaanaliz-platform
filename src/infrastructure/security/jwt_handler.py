@@ -18,6 +18,8 @@ class JWTSettings:
     secret_key: str
     algorithm: str = "HS256"
     access_token_ttl_minutes: int = 30
+    issuer: str = "tarlaanaliz-platform"
+    audience: str = "tarlaanaliz-api"
 
 
 class JWTHandler:
@@ -32,6 +34,8 @@ class JWTHandler:
             "sub": subject,
             "iat": int(now.timestamp()),
             "exp": int((now + timedelta(minutes=self._settings.access_token_ttl_minutes)).timestamp()),
+            "iss": self._settings.issuer,
+            "aud": self._settings.audience,
         }
         if claims:
             payload.update(claims)
@@ -39,7 +43,13 @@ class JWTHandler:
 
     def verify_token(self, token: str) -> dict[str, Any]:
         try:
-            payload = jwt.decode(token, self._settings.secret_key, algorithms=[self._settings.algorithm])
+            payload = jwt.decode(
+                token,
+                self._settings.secret_key,
+                algorithms=[self._settings.algorithm],
+                audience=self._settings.audience,
+                issuer=self._settings.issuer,
+            )
         except JWTError as exc:
             raise ValueError("Invalid JWT token") from exc
 
