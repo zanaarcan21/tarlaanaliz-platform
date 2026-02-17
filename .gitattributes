@@ -1,0 +1,34 @@
+* text=auto eol=lf
+
+# GitHub Actions workflows
+.github/workflows/*.yml text eol=lf
+.github/workflows/*.yaml text eol=lf
+
+# Common text formats
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.ini text eol=lf
+*.toml text eol=lf
+*.cfg text eol=lf
+*.env text eol=lf
+.env* text eol=lf
+
+# Code
+*.py text eol=lf
+*.ps1 text eol=lf
+*.sh text eol=lf
+
+# Repo special files
+.gitignore text eol=lf
+.dockerignore text eol=lf
+Dockerfile text eol=lf
+
+# Prevent accidental text normalization for common binaries
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.pdf binary
