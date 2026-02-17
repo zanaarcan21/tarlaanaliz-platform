@@ -102,3 +102,4 @@ web/playwright-report/
 
 # --- Jupyter ---
 .ipynb_checkpoints/
+mypy.out
