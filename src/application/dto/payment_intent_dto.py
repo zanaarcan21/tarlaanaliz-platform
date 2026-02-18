@@ -34,7 +34,7 @@ class PaymentIntentDTO:
     """Payment intent DTO aligned with manual approval flow."""
 
     intent_id: str
-    subscription_id: str
+    subscription_id: str | None
     payer_user_id: str
     status: str
     amount: Decimal
@@ -71,7 +71,8 @@ class PaymentIntentDTO:
     def from_dict(cls, payload: dict[str, Any]) -> "PaymentIntentDTO":
         return cls(
             intent_id=str(payload["intent_id"]),
-            subscription_id=str(payload["subscription_id"]),
+            # KR-033: Mission and subscription payment intents are both valid contract targets.
+            subscription_id=_to_optional_str(payload.get("subscription_id")),
             payer_user_id=str(payload["payer_user_id"]),
             status=str(payload["status"]),
             amount=Decimal(str(payload["amount"])),
