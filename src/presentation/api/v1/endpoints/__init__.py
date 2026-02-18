@@ -10,6 +10,13 @@ from src.presentation.api.v1.endpoints.fields import router as fields_router
 from src.presentation.api.v1.endpoints.missions import router as missions_router
 from src.presentation.api.v1.endpoints.parcels import router as parcels_router
 from src.presentation.api.v1.endpoints.payment_webhooks import router as payment_webhooks_router
+from src.presentation.api.v1.endpoints.pilots import router as pilots_router
+from src.presentation.api.v1.endpoints.pricing import router as pricing_router
+from src.presentation.api.v1.endpoints.results import router as results_router
+from src.presentation.api.v1.endpoints.subscriptions import router as subscriptions_router
+from src.presentation.api.v1.endpoints.training_feedback import router as training_feedback_router
+from src.presentation.api.v1.endpoints.weather_block_reports import router as weather_block_reports_router
+from src.presentation.api.v1.endpoints.weather_blocks import router as weather_blocks_router
 
 __all__: list[str] = [
     "admin_audit_router",
@@ -21,4 +28,11 @@ __all__: list[str] = [
     "missions_router",
     "parcels_router",
     "payment_webhooks_router",
+    "pilots_router",
+    "pricing_router",
+    "results_router",
+    "subscriptions_router",
+    "training_feedback_router",
+    "weather_block_reports_router",
+    "weather_blocks_router",
 ]

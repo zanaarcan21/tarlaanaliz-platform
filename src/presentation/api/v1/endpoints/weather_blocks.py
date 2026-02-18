@@ -1,3 +1,64 @@
-# PATH: src/presentation/api/v1/endpoints/weather_blocks.py
-# DESC: Weather block sorgulama.
-# TODO: Implement this file.
+# BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated.
+"""Weather block query endpoints."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Protocol
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from pydantic import BaseModel, Field
+
+router = APIRouter(prefix="/weather-blocks", tags=["weather-blocks"])
+
+
+class WeatherBlockDTO(BaseModel):
+    weather_block_id: str
+    starts_at: datetime
+    ends_at: datetime
+    severity: str
+
+
+class WeatherBlockListResponse(BaseModel):
+    items: list[WeatherBlockDTO]
+
+
+class WeatherBlockService(Protocol):
+    def list_for_field(self, field_id: str, limit: int) -> WeatherBlockListResponse:
+        ...
+
+
+@dataclass(slots=True)
+class _InMemoryWeatherBlockService:
+    def list_for_field(self, field_id: str, limit: int) -> WeatherBlockListResponse:
+        return WeatherBlockListResponse(
+            items=[
+                WeatherBlockDTO(
+                    weather_block_id=f"wb-{field_id}",
+                    starts_at=datetime.utcnow(),
+                    ends_at=datetime.utcnow(),
+                    severity="medium",
+                )
+            ][:limit]
+        )
+
+
+def get_weather_block_service() -> WeatherBlockService:
+    return _InMemoryWeatherBlockService()
+
+
+def _require_subject(request: Request) -> None:
+    if getattr(request.state, "user", None) is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+
+
+@router.get("", response_model=WeatherBlockListResponse)
+def list_weather_blocks(
+    request: Request,
+    field_id: str = Query(min_length=3, max_length=64),
+    limit: int = Query(default=20, ge=1, le=100),
+    service: WeatherBlockService = Depends(get_weather_block_service),
+) -> WeatherBlockListResponse:
+    _require_subject(request)
+    return service.list_for_field(field_id=field_id, limit=limit)
