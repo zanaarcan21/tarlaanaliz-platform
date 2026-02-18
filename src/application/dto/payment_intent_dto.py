@@ -16,10 +16,11 @@ class PaymentProofRefDTO:
 
 @dataclass(frozen=True, slots=True)
 class PaymentIntentDTO:
-    payment_intent_id: str
-    payer_ref: str
-    currency_code: str
-    amount_minor: int
+    """Payment intent DTO aligned with manual approval flow."""
+
+    intent_id: str
+    subscription_id: str | None
+    payer_user_id: str
     status: str
     proof_refs: tuple[PaymentProofRefDTO, ...]
     approved_by_user_id: str | None
@@ -48,6 +49,10 @@ class PaymentIntentDTO:
     @classmethod
     def from_dict(cls, payload: dict[str, Any]) -> PaymentIntentDTO:
         return cls(
+            intent_id=str(payload["intent_id"]),
+            # KR-033: Mission and subscription payment intents are both valid contract targets.
+            subscription_id=_to_optional_str(payload.get("subscription_id")),
+            payer_user_id=str(payload["payer_user_id"]),
             payment_intent_id=str(payload["payment_intent_id"]),
             payer_ref=str(payload["payer_ref"]),
             currency_code=str(payload["currency_code"]),
