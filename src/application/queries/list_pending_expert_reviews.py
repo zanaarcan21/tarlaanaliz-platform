@@ -29,7 +29,19 @@ class Page(Generic[T]):
     total: int
 
 
+class QueryValidationError(ValueError):
+    pass
+
+
 class QueryAuthzError(PermissionError):
+    pass
+
+
+class QueryNotFoundError(LookupError):
+    pass
+
+
+class QueryConflictError(RuntimeError):
     pass
 
 
@@ -43,6 +55,14 @@ class ListPendingExpertReviewsRequest:
     correlation_id: str
     page: int = 1
     page_size: int = 20
+
+    def __post_init__(self) -> None:
+        if not self.actor_user_id:
+            raise QueryValidationError("actor_user_id is required")
+        if not self.correlation_id:
+            raise QueryValidationError("correlation_id is required")
+        if self.page <= 0 or self.page_size <= 0:
+            raise QueryValidationError("page and page_size must be positive")
 
 
 @dataclass(frozen=True, slots=True)
@@ -83,16 +103,17 @@ class ListPendingExpertReviewsQuery:
     rate_limiter: RateLimiterPort
     audit_logger: AuditLoggerPort
 
+    # KR-081: query request/result DTO contract is explicit and stable.
     async def execute(self, request: ListPendingExpertReviewsRequest) -> ListPendingExpertReviewsResult:
-        if request.page <= 0 or request.page_size <= 0:
-            raise ValueError("page and page_size must be positive")
-
         if not await self.rate_limiter.allow(actor_user_id=request.actor_user_id, action="list_pending_expert_reviews"):
             raise QueryRateLimitError("rate limit exceeded")
         if not await self.authorizer.can_list_pending_expert_reviews(request.actor_user_id):
             raise QueryAuthzError("actor is not authorized")
 
         items, total = await self.read_port.list_pending(page=request.page, page_size=request.page_size)
+        if total < 0:
+            raise QueryConflictError("total cannot be negative")
+
         await self.audit_logger.log_query(
             correlation_id=request.correlation_id,
             actor_user_id=request.actor_user_id,

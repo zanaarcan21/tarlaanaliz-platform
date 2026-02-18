@@ -21,11 +21,19 @@ from src.core.domain.value_objects.parcel_ref import ParcelRef
 from src.core.ports.external.parcel_geometry_provider import ParcelGeometryProvider
 
 
+class QueryValidationError(ValueError):
+    pass
+
+
 class QueryAuthzError(PermissionError):
     pass
 
 
 class QueryNotFoundError(LookupError):
+    pass
+
+
+class QueryConflictError(RuntimeError):
     pass
 
 
@@ -42,6 +50,14 @@ class LookupParcelGeometryRequest:
     village: str
     ada: str
     parsel: str
+
+    def __post_init__(self) -> None:
+        if not self.actor_user_id:
+            raise QueryValidationError("actor_user_id is required")
+        if not self.correlation_id:
+            raise QueryValidationError("correlation_id is required")
+        if not self.province or not self.district or not self.village or not self.ada or not self.parsel:
+            raise QueryValidationError("province, district, village, ada and parsel are required")
 
 
 @dataclass(frozen=True, slots=True)
@@ -72,13 +88,14 @@ class LookupParcelGeometryQuery:
     rate_limiter: RateLimiterPort
     audit_logger: AuditLoggerPort
 
-    # KR-081: contract-first request/result DTO.
+    # KR-081: request/result contract is explicit and stable.
     async def execute(self, request: LookupParcelGeometryRequest) -> LookupParcelGeometryResult:
         if not await self.rate_limiter.allow(actor_user_id=request.actor_user_id, action="lookup_parcel_geometry"):
             raise QueryRateLimitError("rate limit exceeded")
         if not await self.authorizer.can_lookup_parcel_geometry(request.actor_user_id):
             raise QueryAuthzError("actor is not authorized")
 
+        # KR-081: lookup uses external geometry port contract.
         parcel = ParcelRef(
             province=request.province,
             district=request.district,
@@ -89,6 +106,8 @@ class LookupParcelGeometryQuery:
         geometry = await self.tkgm_provider.get_geometry(parcel)
         if geometry is None:
             raise QueryNotFoundError("parcel geometry not found")
+        if geometry.area_m2 <= 0:
+            raise QueryConflictError("parcel geometry area_m2 must be positive")
 
         await self.audit_logger.log_query(
             correlation_id=request.correlation_id,

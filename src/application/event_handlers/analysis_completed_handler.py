@@ -9,6 +9,7 @@ from typing import Protocol
 
 from src.core.domain.events.analysis_events import AnalysisCompleted
 from src.core.domain.events.expert_review_events import ExpertReviewRequested
+from src.core.domain.value_objects.ai_confidence import AIConfidence
 
 
 class AnalysisResultSink(Protocol):
@@ -29,7 +30,8 @@ class AnalysisCompletedHandler:
 
     result_sink: AnalysisResultSink
     review_trigger: ExpertReviewTrigger
-    confidence_threshold: float = 0.65
+    # KR-019: domain-level expert review threshold must match AI confidence policy.
+    confidence_threshold: float = AIConfidence.DEFAULT_EXPERT_REVIEW_THRESHOLD
 
     # KR-081: Event payload is handled as contract-defined shape.
     # KR-018: Handler is only for completed analysis events after calibration gate.
