@@ -34,6 +34,7 @@ class AuditLogService:
     audit_port: AuditLogPort
 
     def append(self, entry: AuditEntry) -> None:
+        # KR-033: Record auditable action with correlation.
         # KR-033: kritik karar ve geçitlerde audit izi tek noktadan tutulur.
         self.audit_port.append(
             event_type=entry.event_type,
