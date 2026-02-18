@@ -1,3 +1,72 @@
-# PATH: src/presentation/api/v1/endpoints/fields.py
-# DESC: Field CRUD endpoint'leri.
-# TODO: Implement this file.
+# BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated.
+"""Field CRUD endpoints."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Protocol
+
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from pydantic import BaseModel, Field
+
+router = APIRouter(prefix="/fields", tags=["fields"])
+
+
+class FieldCreateRequest(BaseModel):
+    field_name: str = Field(min_length=2, max_length=120)
+    parcel_ref: str = Field(min_length=3, max_length=64)
+    area_ha: float = Field(gt=0)
+
+
+class FieldResponse(BaseModel):
+    field_id: str
+    field_name: str
+    parcel_ref: str
+    area_ha: float
+
+
+class FieldService(Protocol):
+    def create(self, owner_subject: str, payload: FieldCreateRequest) -> FieldResponse:
+        ...
+
+    def list_by_owner(self, owner_subject: str) -> list[FieldResponse]:
+        ...
+
+
+@dataclass(slots=True)
+class _InMemoryFieldService:
+    def create(self, owner_subject: str, payload: FieldCreateRequest) -> FieldResponse:
+        _ = owner_subject
+        return FieldResponse(field_id="fld-1", field_name=payload.field_name, parcel_ref=payload.parcel_ref, area_ha=payload.area_ha)
+
+    def list_by_owner(self, owner_subject: str) -> list[FieldResponse]:
+        _ = owner_subject
+        return []
+
+
+def get_field_service() -> FieldService:
+    return _InMemoryFieldService()
+
+
+def _require_authenticated_subject(request: Request) -> str:
+    user = getattr(request.state, "user", None)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    return str(getattr(user, "subject", ""))
+
+
+@router.post("", response_model=FieldResponse, status_code=status.HTTP_201_CREATED)
+def create_field(
+    request: Request,
+    payload: FieldCreateRequest,
+    service: FieldService = Depends(get_field_service),
+) -> FieldResponse:
+    # KR-081: explicit DTO contract at API surface.
+    subject = _require_authenticated_subject(request)
+    return service.create(owner_subject=subject, payload=payload)
+
+
+@router.get("", response_model=list[FieldResponse])
+def list_fields(request: Request, service: FieldService = Depends(get_field_service)) -> list[FieldResponse]:
+    subject = _require_authenticated_subject(request)
+    return service.list_by_owner(owner_subject=subject)
