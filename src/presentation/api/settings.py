@@ -1,5 +1,5 @@
 # BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated.
-"""API settings for middleware wiring."""
+"""API settings for middleware and app wiring."""
 
 from __future__ import annotations
 
@@ -30,6 +30,15 @@ def _env_list(name: str, default: list[str]) -> list[str]:
         return default
     parsed = [item.strip() for item in raw_value.split(",") if item.strip()]
     return parsed or default
+
+
+@dataclass(slots=True)
+class AppSettings:
+    title: str = field(default_factory=lambda: os.getenv("API_TITLE", "TarlaAnaliz Platform API"))
+    version: str = field(default_factory=lambda: os.getenv("API_VERSION", "1.0.0"))
+    docs_url: str | None = field(default_factory=lambda: os.getenv("API_DOCS_URL", "/docs"))
+    redoc_url: str | None = field(default_factory=lambda: os.getenv("API_REDOC_URL", "/redoc"))
+    openapi_url: str | None = field(default_factory=lambda: os.getenv("API_OPENAPI_URL", "/openapi.json"))
 
 
 @dataclass(slots=True)
@@ -68,6 +77,7 @@ class AnomalySettings:
 
 @dataclass(slots=True)
 class ApiSettings:
+    app: AppSettings = field(default_factory=AppSettings)
     cors: CorsSettings = field(default_factory=CorsSettings)
     jwt: JwtSettings = field(default_factory=JwtSettings)
     rate_limit: RateLimitSettings = field(default_factory=RateLimitSettings)

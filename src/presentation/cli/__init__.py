@@ -1,5 +1,6 @@
-# PATH: src/presentation/cli/__init__.py
-# DESC: Project file: __init__.py.
-# TODO: Implement this file.
+# BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated.
+"""CLI package exports."""
 
-__all__: list[str] = []
+from src.presentation.cli.main import build_parser, main
+
+__all__ = ["build_parser", "main"]

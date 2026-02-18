@@ -1,5 +1,4 @@
-# PATH: src/presentation/__init__.py
-# DESC: Project file: __init__.py.
-# TODO: Implement this file.
+# BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated.
+"""Presentation package exports."""
 
-__all__: list[str] = []
+__all__ = ["api", "cli"]
