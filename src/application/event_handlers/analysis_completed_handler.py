@@ -1,3 +1,49 @@
-# PATH: src/application/event_handlers/analysis_completed_handler.py
-# DESC: Worker'dan gelen 'analysis completed' olayını işleyip sonuçları kalıcılaştırmak.
-# TODO: Implement this file.
+# BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated.
+"""Application handler for analysis-completed events."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from typing import Protocol
+
+from src.core.domain.events.analysis_events import AnalysisCompleted
+from src.core.domain.events.expert_review_events import ExpertReviewRequested
+
+
+class AnalysisResultSink(Protocol):
+    """Port for persisting analysis-completed payloads."""
+
+    async def persist_completed_event(self, event: AnalysisCompleted) -> None: ...
+
+
+class ExpertReviewTrigger(Protocol):
+    """Port for creating a review request on low-confidence results."""
+
+    async def request_review(self, event: ExpertReviewRequested) -> None: ...
+
+
+@dataclass(slots=True)
+class AnalysisCompletedHandler:
+    """Persists analysis completion and optionally requests expert review."""
+
+    result_sink: AnalysisResultSink
+    review_trigger: ExpertReviewTrigger
+    confidence_threshold: float = 0.65
+
+    # KR-081: Event payload is handled as contract-defined shape.
+    # KR-018: Handler is only for completed analysis events after calibration gate.
+    async def handle(self, event: AnalysisCompleted) -> None:
+        await self.result_sink.persist_completed_event(event)
+
+        if event.confidence_score >= self.confidence_threshold:
+            return
+
+        # KR-081: emit typed domain event for review request.
+        review_event = ExpertReviewRequested(
+            analysis_job_id=event.analysis_job_id,
+            field_id=event.field_id,
+            confidence_score=event.confidence_score,
+            occurred_at=datetime.now(timezone.utc),
+        )
+        await self.review_trigger.request_review(review_event)
