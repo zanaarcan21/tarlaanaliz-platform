@@ -20,6 +20,11 @@ class SubscriptionDTO:
     created_at: datetime
     updated_at: datetime
 
+    def __post_init__(self) -> None:
+        # KR-033: paid state requires payment intent presence.
+        if self.status == "paid" and self.payment_intent_id is None:
+            raise ValueError("payment_intent_id is required when status is 'paid'")
+
     # KR-033: status='paid' contract consumers must also observe non-null payment_intent_id.
     def to_dict(self) -> dict[str, Any]:
         return {

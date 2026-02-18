@@ -26,6 +26,11 @@ class PaymentIntentDTO:
     created_at: datetime
     approved_at: datetime | None
 
+    def __post_init__(self) -> None:
+        # KR-033: paid state requires explicit manual approval evidence.
+        if self.status == "paid" and self.approved_at is None:
+            raise ValueError("approved_at is required when status is 'paid'")
+
     # KR-033: paid state is valid only with payment_intent_id present in contract.
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -51,6 +56,10 @@ class PaymentIntentDTO:
             proof_refs=tuple(
                 PaymentProofRefDTO(proof_id=str(item["proof_id"]), file_uri=str(item["file_uri"]))
                 for item in payload.get("proof_refs", [])
+            ),
+            approved_by_user_id=(
+                None if payload.get("approved_by_user_id") is None else str(payload["approved_by_user_id"])
+            ),
             ),
             approved_by_user_id=(
                 None if payload.get("approved_by_user_id") is None else str(payload["approved_by_user_id"])

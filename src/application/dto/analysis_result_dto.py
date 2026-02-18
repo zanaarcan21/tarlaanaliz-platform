@@ -30,6 +30,13 @@ class AnalysisResultDTO:
     created_at: datetime
     completed_at: datetime | None
 
+    def __post_init__(self) -> None:
+        # KR-018: calibration hard-gate.
+        if not self.calibration_certificate_id:
+            raise ValueError("calibration_certificate_id is required")
+        if self.completed_at is not None and self.completed_at < self.created_at:
+            raise ValueError("completed_at cannot be earlier than created_at")
+
     # KR-081: stable contract mapping surface.
     def to_dict(self) -> dict[str, Any]:
         return {

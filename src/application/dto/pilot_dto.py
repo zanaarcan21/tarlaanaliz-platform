@@ -22,6 +22,17 @@ class PilotDTO:
     created_at: datetime
     updated_at: datetime
 
+    def __post_init__(self) -> None:
+        # KR-015: work_days <= 6 and explicit capacity constraints.
+        if len(self.work_days) > 6:
+            raise ValueError("work_days cannot exceed 6")
+        if self.daily_capacity_donum <= 0:
+            raise ValueError("daily_capacity_donum must be > 0")
+        if self.system_seed_quota_donum < 0:
+            raise ValueError("system_seed_quota_donum must be >= 0")
+        if self.system_seed_quota_donum > self.daily_capacity_donum:
+            raise ValueError("system_seed_quota_donum cannot exceed daily_capacity_donum")
+
     # KR-015: capacity and work day constraints are explicit for planning reads.
     def to_dict(self) -> dict[str, Any]:
         return {
