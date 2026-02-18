@@ -1,5 +1,5 @@
-# PATH: src/application/__init__.py
-# DESC: Application layer module: __init__.py.
-# TODO: Implement this file.
+# BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated.  # noqa: RUF003
 
-__all__: list[str] = []
+from . import services
+
+__all__ = ["services"]
