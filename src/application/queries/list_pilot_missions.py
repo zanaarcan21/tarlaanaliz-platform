@@ -14,7 +14,7 @@ Notlar/SSOT: Contract-first (KR-081) ve kritik kapılar (KR-018/KR-033/KR-015) a
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date
 from typing import Generic, Protocol, TypeVar
 
 
@@ -29,7 +29,19 @@ class Page(Generic[T]):
     total: int
 
 
+class QueryValidationError(ValueError):
+    pass
+
+
 class QueryAuthzError(PermissionError):
+    pass
+
+
+class QueryNotFoundError(LookupError):
+    pass
+
+
+class QueryConflictError(RuntimeError):
     pass
 
 
@@ -45,13 +57,23 @@ class ListPilotMissionsRequest:
     page: int = 1
     page_size: int = 20
 
+    def __post_init__(self) -> None:
+        if not self.actor_user_id:
+            raise QueryValidationError("actor_user_id is required")
+        if not self.correlation_id:
+            raise QueryValidationError("correlation_id is required")
+        if not self.pilot_id:
+            raise QueryValidationError("pilot_id is required")
+        if self.page <= 0 or self.page_size <= 0:
+            raise QueryValidationError("page and page_size must be positive")
+
 
 @dataclass(frozen=True, slots=True)
 class PilotMissionItem:
     mission_id: str
     field_id: str
     status: str
-    scheduled_date: datetime
+    scheduled_date: date
     area_donum: float
 
 
@@ -85,10 +107,9 @@ class ListPilotMissionsQuery:
     rate_limiter: RateLimiterPort
     audit_logger: AuditLoggerPort
 
+    # KR-015: mission list read model keeps planning fields explicit (date/area).
+    # KR-081: request/result DTO contract is explicit and stable.
     async def execute(self, request: ListPilotMissionsRequest) -> ListPilotMissionsResult:
-        if request.page <= 0 or request.page_size <= 0:
-            raise ValueError("page and page_size must be positive")
-
         if not await self.rate_limiter.allow(actor_user_id=request.actor_user_id, action="list_pilot_missions"):
             raise QueryRateLimitError("rate limit exceeded")
         if not await self.authorizer.can_view_pilot_missions(request.actor_user_id, request.pilot_id):
@@ -99,6 +120,9 @@ class ListPilotMissionsQuery:
             page=request.page,
             page_size=request.page_size,
         )
+        if total < 0:
+            raise QueryConflictError("total cannot be negative")
+
         await self.audit_logger.log_query(
             correlation_id=request.correlation_id,
             actor_user_id=request.actor_user_id,
