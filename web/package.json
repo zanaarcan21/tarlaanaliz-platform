@@ -1,5 +1,18 @@
 {
-  "__file_path": "web/package.json",
-  "__description": "Next.js 14 + TypeScript + PWA dependencies ve scripts tanımı.",
-  "__todo": "Fill this JSON file with real content."
+  "BOUND": "TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated.",
+  "name": "tarlaanaliz-web",
+  "version": "3.2.2",
+  "private": true,
+  "packageManager": "pnpm@8.15.9",
+  "scripts": {
+    "lint": "node ./scripts/ci/run.mjs lint",
+    "format:check": "node ./scripts/ci/run.mjs format",
+    "type-check": "node ./scripts/ci/run.mjs type-check",
+    "test:coverage": "node ./scripts/ci/run.mjs coverage",
+    "build": "node ./scripts/ci/run.mjs build",
+    "analyze": "node ./scripts/ci/run.mjs analyze",
+    "start": "node ./scripts/ci/run.mjs start",
+    "test:e2e": "node ./scripts/ci/run.mjs e2e",
+    "test:a11y": "node ./scripts/ci/run.mjs a11y"
+  }
 }

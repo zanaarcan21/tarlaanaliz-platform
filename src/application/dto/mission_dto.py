@@ -1,82 +1,82 @@
 # BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated.
-"""Application DTOs for mission payloads (contract-mappable)."""
+"""Application DTOs for contract-first payload mapping."""
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import date, datetime, timezone
 from typing import Any
 
 
 @dataclass(frozen=True, slots=True)
 class MissionAssetDTO:
-    """Mission output or source asset reference."""
-
     asset_type: str
-    uri: str
-    checksum: str | None
+    asset_uri: str
+    checksum_sha256: str
 
 
 @dataclass(frozen=True, slots=True)
 class MissionDTO:
-    """Mission lifecycle DTO for API schema mapping."""
-
     mission_id: str
     field_id: str
-    pilot_id: str | None
-    subscription_id: str | None
-    mission_code: str
+    pilot_id: str
+    crop_type: str
     status: str
-    scheduled_start_at: datetime
-    scheduled_end_at: datetime | None
-    flown_at: datetime | None
-    kmz_uri: str | None
-    area_donum: float
-    notes: str | None
-    outputs: tuple[MissionAssetDTO, ...]
+    scheduled_date: date
+    assigned_area_m2: float
+    delivered_area_m2: float | None
+    assets: tuple[MissionAssetDTO, ...]
     created_at: datetime
     updated_at: datetime
 
-    # KR-016: mission code and output naming must remain contract-aligned.
+    # KR-015: explicit planning capacity related fields (date + area) included in read-model.
+    # KR-016: mission_id exposed as canonical mission reference.
     def to_dict(self) -> dict[str, Any]:
-        data = asdict(self)
-        data["scheduled_start_at"] = _to_utc_iso(self.scheduled_start_at)
-        data["scheduled_end_at"] = _optional_dt(self.scheduled_end_at)
-        data["flown_at"] = _optional_dt(self.flown_at)
-        data["created_at"] = _to_utc_iso(self.created_at)
-        data["updated_at"] = _to_utc_iso(self.updated_at)
-        return data
+        return {
+            "mission_id": self.mission_id,
+            "field_id": self.field_id,
+            "pilot_id": self.pilot_id,
+            "crop_type": self.crop_type,
+            "status": self.status,
+            "scheduled_date": self.scheduled_date.isoformat(),
+            "assigned_area_m2": self.assigned_area_m2,
+            "delivered_area_m2": self.delivered_area_m2,
+            "assets": [
+                {
+                    "asset_type": asset.asset_type,
+                    "asset_uri": asset.asset_uri,
+                    "checksum_sha256": asset.checksum_sha256,
+                }
+                for asset in self.assets
+            ],
+            "created_at": _to_utc_iso(self.created_at),
+            "updated_at": _to_utc_iso(self.updated_at),
+        }
 
     @classmethod
-    def from_dict(cls, payload: dict[str, Any]) -> "MissionDTO":
+    def from_dict(cls, payload: dict[str, Any]) -> MissionDTO:
         return cls(
             mission_id=str(payload["mission_id"]),
             field_id=str(payload["field_id"]),
-            pilot_id=_to_optional_str(payload.get("pilot_id")),
-            subscription_id=_to_optional_str(payload.get("subscription_id")),
-            mission_code=str(payload["mission_code"]),
+            pilot_id=str(payload["pilot_id"]),
+            crop_type=str(payload["crop_type"]),
             status=str(payload["status"]),
-            scheduled_start_at=_parse_datetime(payload["scheduled_start_at"]),
-            scheduled_end_at=_parse_optional_datetime(payload.get("scheduled_end_at")),
-            flown_at=_parse_optional_datetime(payload.get("flown_at")),
-            kmz_uri=_to_optional_str(payload.get("kmz_uri")),
-            area_donum=float(payload["area_donum"]),
-            notes=_to_optional_str(payload.get("notes")),
-            outputs=tuple(
+            scheduled_date=_parse_date(payload["scheduled_date"]),
+            assigned_area_m2=float(payload["assigned_area_m2"]),
+            delivered_area_m2=(
+                None if payload.get("delivered_area_m2") is None else float(payload["delivered_area_m2"])
+            ),
+            assets=tuple(
                 MissionAssetDTO(
                     asset_type=str(item["asset_type"]),
-                    uri=str(item["uri"]),
-                    checksum=_to_optional_str(item.get("checksum")),
+                    asset_uri=str(item["asset_uri"]),
+                    checksum_sha256=str(item["checksum_sha256"]),
                 )
-                for item in payload.get("outputs", [])
+                for item in payload.get("assets", [])
             ),
             created_at=_parse_datetime(payload["created_at"]),
             updated_at=_parse_datetime(payload["updated_at"]),
         )
-
-
-def _to_optional_str(value: Any) -> str | None:
-    return None if value is None else str(value)
 
 
 def _to_utc_iso(value: datetime) -> str:
@@ -84,17 +84,14 @@ def _to_utc_iso(value: datetime) -> str:
     return aware.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
-def _optional_dt(value: datetime | None) -> str | None:
-    return None if value is None else _to_utc_iso(value)
-
-
-def _parse_optional_datetime(raw: Any) -> datetime | None:
-    return None if raw is None else _parse_datetime(raw)
+def _parse_date(raw: Any) -> date:
+    if isinstance(raw, date) and not isinstance(raw, datetime):
+        return raw
+    return date.fromisoformat(str(raw))
 
 
 def _parse_datetime(raw: Any) -> datetime:
     if isinstance(raw, datetime):
         return raw if raw.tzinfo else raw.replace(tzinfo=timezone.utc)
-    text = str(raw)
-    dt = datetime.fromisoformat(text.replace("Z", "+00:00"))
-    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+    parsed = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
