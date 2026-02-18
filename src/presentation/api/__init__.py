@@ -1,5 +1,18 @@
-# PATH: src/presentation/api/__init__.py
-# DESC: API/presentation layer module: __init__.py.
-# TODO: Implement this file.
+# BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated.
+"""Presentation API package exports."""
 
-__all__: list[str] = []
+from src.presentation.api.v1 import (
+    admin_payments_router,
+    calibration_router,
+    payments_router,
+    qc_router,
+    sla_metrics_router,
+)
+
+__all__ = [
+    "admin_payments_router",
+    "calibration_router",
+    "payments_router",
+    "qc_router",
+    "sla_metrics_router",
+]
