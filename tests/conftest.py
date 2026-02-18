@@ -8,6 +8,9 @@ import importlib.util
 from typing import Any
 
 
+pytest_plugins = ["tests.fixtures.domain_fixtures"]
+
+
 def pytest_addoption(parser: Any) -> None:
     """Register fallback options when optional plugins are missing."""
     parser.addini("asyncio_mode", "pytest-asyncio compatibility option")
