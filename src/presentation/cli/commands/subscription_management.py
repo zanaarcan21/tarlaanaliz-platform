@@ -17,7 +17,7 @@ EXIT_FORBIDDEN = 4
 def _load_service() -> object:
     try:
         from src.application.services import subscription_management_service
-    except Exception as exc:
+    except (ImportError, ModuleNotFoundError, SyntaxError) as exc:
         raise RuntimeError("TODO: src.application.services.subscription_management_service is not available") from exc
     return subscription_management_service
 

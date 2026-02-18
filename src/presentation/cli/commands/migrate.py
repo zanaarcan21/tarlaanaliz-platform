@@ -20,7 +20,7 @@ def _db_url_from_env() -> str | None:
 def _load_runner() -> object:
     try:
         from src.infrastructure.db import migration_runner
-    except Exception as exc:
+    except (ImportError, ModuleNotFoundError, SyntaxError) as exc:
         raise RuntimeError("TODO: migration runner adapter is not available") from exc
     return migration_runner
 

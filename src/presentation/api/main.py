@@ -6,6 +6,7 @@ from __future__ import annotations
 import uuid
 from contextlib import asynccontextmanager
 
+from fastapi import FastAPI, Request
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -16,6 +17,17 @@ from src.presentation.api.middleware.cors_middleware import add_cors_middleware
 from src.presentation.api.middleware.jwt_middleware import JwtMiddleware
 from src.presentation.api.middleware.rate_limit_middleware import RateLimitMiddleware
 from src.presentation.api.settings import settings
+from src.presentation.api.v1 import admin_payments_router, calibration_router, payments_router, qc_router, sla_metrics_router
+from src.presentation.api.v1.endpoints import (
+    admin_audit_router,
+    admin_pricing_router,
+    auth_router,
+    expert_portal_router,
+    experts_router,
+    fields_router,
+    missions_router,
+    parcels_router,
+    payment_webhooks_router,
 from src.presentation.api.v1 import (
     admin_payments_router,
     calibration_router,
@@ -49,6 +61,10 @@ def _register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(StarletteHTTPException)
     async def handle_http_exception(request: Request, exc: StarletteHTTPException) -> JSONResponse:
+        safe_detail = exc.detail if exc.status_code < 500 else "Internal server error"
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"detail": safe_detail, "corr_id": getattr(request.state, "corr_id", None)},
         detail = exc.detail if isinstance(exc, HTTPException) else "Request failed"
         return JSONResponse(
             status_code=exc.status_code,
@@ -66,6 +82,11 @@ def _register_exception_handlers(app: FastAPI) -> None:
 def create_app() -> FastAPI:
     """Create and configure the FastAPI app instance."""
     app = FastAPI(
+        title=settings.app.title,
+        version=settings.app.version,
+        docs_url=settings.app.docs_url,
+        redoc_url=settings.app.redoc_url,
+        openapi_url=settings.app.openapi_url,
         title="TarlaAnaliz Platform API",
         version="1.0.0",
         docs_url="/docs",
@@ -89,6 +110,16 @@ def create_app() -> FastAPI:
     app.include_router(calibration_router, prefix="/api/v1")
     app.include_router(qc_router, prefix="/api/v1")
     app.include_router(sla_metrics_router, prefix="/api/v1")
+
+    app.include_router(auth_router, prefix="/api/v1")
+    app.include_router(fields_router, prefix="/api/v1")
+    app.include_router(parcels_router, prefix="/api/v1")
+    app.include_router(missions_router, prefix="/api/v1")
+    app.include_router(experts_router, prefix="/api/v1")
+    app.include_router(expert_portal_router, prefix="/api/v1")
+    app.include_router(payment_webhooks_router, prefix="/api/v1")
+    app.include_router(admin_audit_router, prefix="/api/v1")
+    app.include_router(admin_pricing_router, prefix="/api/v1")
 
     _register_exception_handlers(app)
     return app
