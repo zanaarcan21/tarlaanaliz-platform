@@ -21,6 +21,7 @@ class ExpertDashboardStatsDTO:
             raise ValueError("completed_reviews must be >= 0")
         if self.daily_review_limit is not None and self.daily_review_limit < 0:
             raise ValueError("daily_review_limit must be >= 0")
+    # TODO: decide if daily_review_limit should be per territory or global.
 
 
 @dataclass(frozen=True, slots=True)
