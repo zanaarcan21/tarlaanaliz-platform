@@ -17,6 +17,7 @@ EXIT_FORBIDDEN = 4
 def _load_service() -> object:
     try:
         from src.application.services import expert_management_service
+    except (ImportError, ModuleNotFoundError, SyntaxError) as exc:
     except Exception as exc:
         raise RuntimeError("TODO: src.application.services.expert_management_service is not available") from exc
     return expert_management_service
