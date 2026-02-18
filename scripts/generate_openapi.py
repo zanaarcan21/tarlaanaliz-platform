@@ -93,7 +93,11 @@ def main(argv: list[str] | None = None) -> int:
         return EXIT_DEP_MISSING
 
     paths = spec.get("paths", {})
-    invalid_paths = [p for p in paths if p != "/health" and not p.startswith("/v1/")]
+    invalid_paths = [
+        p
+        for p in paths
+        if p != "/health" and not p.startswith("/v1/") and not p.startswith("/api/v1/")
+    ]
     if invalid_paths:
         log("WARNING", corr_id, "non-v1 business paths detected", paths=invalid_paths)
 
