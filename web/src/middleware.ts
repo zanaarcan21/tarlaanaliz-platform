@@ -1,7 +1,44 @@
-/*
-PATH: web/src/middleware.ts
-DESC: [v3.2.2 YENİ] Next.js middleware; JWT auth guard + role-based route protection + rate limit.
-TODO: Implement this file.
-*/
+/* BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated. */
+/* KR-071: auth + role yönlendirmesi güvenli varsayılanla uygulanır. */
 
-export {};
+import { NextRequest, NextResponse } from "next/server";
+
+const PUBLIC_PATHS = new Set(["/login", "/", "/api/health"]);
+const ROLE_PREFIXES: Record<string, readonly string[]> = {
+  admin: ["/analytics", "/audit", "/pricing", "/sla", "/users", "/payments", "/calibration", "/qc", "/api-keys", "/experts", "/pilots"],
+  expert: ["/queue", "/review", "/settings", "/sla"],
+  farmer: ["/fields", "/missions", "/subscriptions", "/results", "/payments"],
+  pilot: ["/missions", "/planner", "/capacity", "/settings"],
+};
+
+function isStaticPath(pathname: string): boolean {
+  return pathname.startsWith("/_next") || pathname.startsWith("/icons") || pathname.startsWith("/sounds") || pathname.includes(".");
+}
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  if (isStaticPath(pathname) || PUBLIC_PATHS.has(pathname)) {
+    return NextResponse.next();
+  }
+
+  const token = request.cookies.get("ta_token")?.value;
+  const role = request.cookies.get("ta_role")?.value;
+
+  if (!token || !role) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  const allowedPrefixes = ROLE_PREFIXES[role] ?? [];
+  const isAllowed = allowedPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+
+  if (!isAllowed) {
+    return NextResponse.redirect(new URL("/forbidden", request.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ["/:path*"],
+};

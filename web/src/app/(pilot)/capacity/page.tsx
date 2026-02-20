@@ -1,7 +1,18 @@
-/*
-PATH: web/src/app/(pilot)/capacity/page.tsx
-DESC: Pilot capacity settings; work_days selection (max 6, no Sunday), daily_capacity_donum adjustment.
-TODO: Implement this file.
-*/
+/* BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated. */
+/* KR-015: kapasite/çalışma günü kısıtları. */
 
-export {};
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Pilot Capacity" };
+
+export default function PilotCapacityPage() {
+  return (
+    <section className="space-y-4" aria-label="Pilot capacity" data-corr-id="pending" data-request-id="pending">
+      <h1 className="text-2xl font-semibold">Kapasite Ayarları</h1>
+      <ul className="list-inside list-disc rounded-lg border border-slate-200 bg-white p-4 text-sm">
+        <li>Çalışma günleri: en fazla 6</li>
+        <li>Günlük kapasite: 120 dönüm (stub)</li>
+      </ul>
+    </section>
+  );
+}
