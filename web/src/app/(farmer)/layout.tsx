@@ -1,7 +1,51 @@
-/*
-PATH: web/src/app/(farmer)/layout.tsx
-DESC: Farmer layout; sidebar nav (Fields, Missions, Subscriptions, Results, Profile).
-TODO: Implement this file.
-*/
+/* BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated. */
+/* KR-071: role/auth guard akışında izlenebilir yönlendirme. */
 
-export {};
+import type { ReactNode } from "react";
+import Link from "next/link";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+
+interface FarmerLayoutProps {
+  readonly children: ReactNode;
+}
+
+const navItems = [
+  { href: "/fields", label: "Tarlalar" },
+  { href: "/missions", label: "Görevler" },
+  { href: "/subscriptions", label: "Abonelikler" },
+  { href: "/results", label: "Sonuçlar" },
+  { href: "/payments", label: "Ödemeler" },
+] as const;
+
+export default function FarmerLayout({ children }: FarmerLayoutProps) {
+  const cookieStore = cookies();
+  const token = cookieStore.get("ta_token")?.value;
+  const role = cookieStore.get("ta_role")?.value;
+
+  if (!token) {
+    redirect("/login");
+  }
+
+  if (role !== "farmer") {
+    redirect("/forbidden");
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-6 md:grid-cols-[220px_1fr]">
+        <aside className="rounded-lg border border-slate-200 bg-white p-4">
+          <h2 className="mb-3 text-sm font-semibold text-slate-600">Farmer</h2>
+          <nav aria-label="Farmer navigation" className="space-y-2">
+            {navItems.map((item) => (
+              <Link key={item.href} href={item.href} className="block rounded px-2 py-1 text-sm hover:bg-slate-100">
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        </aside>
+        <main>{children}</main>
+      </div>
+    </div>
+  );
+}
