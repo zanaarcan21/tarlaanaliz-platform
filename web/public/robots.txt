@@ -1,3 +1,5 @@
-# PATH: web/public/robots.txt
-# DESC: Web frontend file: robots.txt.
-# TODO: Implement this file.
+# BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated.
+User-agent: *
+Allow: /
+
+Sitemap: /sitemap.xml
