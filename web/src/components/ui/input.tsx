@@ -1,7 +1,25 @@
-/*
-PATH: web/src/components/ui/input.tsx
-DESC: Reusable input component.
-TODO: Implement this file.
-*/
+// BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated.
+'use client';
 
-export {};
+import { forwardRef } from 'react';
+
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  hasError?: boolean;
+}
+
+export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
+  { className = '', hasError = false, ...props },
+  ref
+) {
+  return (
+    <input
+      ref={ref}
+      className={`h-10 w-full rounded-md border px-3 text-sm shadow-sm outline-none transition placeholder:text-slate-400 focus-visible:ring-2 ${
+        hasError
+          ? 'border-rose-500 focus-visible:ring-rose-400'
+          : 'border-slate-300 focus-visible:ring-emerald-500'
+      } ${className}`.trim()}
+      {...props}
+    />
+  );
+});
