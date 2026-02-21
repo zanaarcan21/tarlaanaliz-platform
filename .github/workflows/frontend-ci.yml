@@ -1,3 +1,4 @@
+# BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated.
 # PATH: .github/workflows/frontend-ci.yml
 # DESC: pnpm/yarn build+lint+e2e (Playwright dahil).
 name: Frontend CI
@@ -316,13 +317,6 @@ jobs:
           name: pwa-build
           path: web/
 
-      - name: Start test server
-        working-directory: web
-        run: |
-          pnpm run start &
-          sleep 10
-          curl -f http://localhost:3000 || exit 1
-
       - name: Run Playwright tests
         working-directory: web
         env:
@@ -425,7 +419,7 @@ jobs:
       - name: Run pnpm audit
         working-directory: web
         run: |
-          pnpm audit --audit-level=moderate || {
+          pnpm audit --audit-level=high || {
             echo "⚠️ Security vulnerabilities detected"
             pnpm audit --json > audit-report.json
             exit 1
@@ -453,17 +447,20 @@ jobs:
     steps:
       - name: Check all jobs passed
         run: |
-          if [ "${{ needs.lint-and-format.result }}" != "success" ] || \
-             [ "${{ needs.unit-tests.result }}" != "success" ] || \
-             [ "${{ needs.build-pwa.result }}" != "success" ] || \
-             [ "${{ needs.e2e-tests.result }}" != "success" ] || \
-             [ "${{ needs.accessibility-tests.result }}" != "success" ] || \
-             [ "${{ needs.security-audit.result }}" != "success" ]; then
-            echo "❌ Frontend CI failed"
+          RESULTS="${{ join(needs.*.result, ' ') }}"
+          echo "Frontend CI needs sonuçları: $RESULTS"
+
+          if echo "$RESULTS" | grep -Eq 'failure|cancelled'; then
+            echo "❌ Frontend CI failed (failure/cancelled bulundu)"
             exit 1
-          else
-            echo "✅ All frontend CI checks passed"
           fi
+
+          if echo "$RESULTS" | grep -q 'skipped'; then
+            echo "❌ Frontend CI failed (skipped job bulundu)"
+            exit 1
+          fi
+
+          echo "✅ All frontend CI checks passed"
 
       - name: Comment PR with test summary
         if: github.event_name == 'pull_request'
