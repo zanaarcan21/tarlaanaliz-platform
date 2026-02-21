@@ -10,7 +10,7 @@
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "type-check": "tsc --noEmit",
-    "format:check": "prettier --check .",
+    "format:check": "prettier --check .storybook/preview.ts e2e playwright.config.ts scripts/ci/run.mjs",
     "test:e2e": "playwright test",
     "analyze": "ANALYZE=true next build",
     "test:coverage": "node -e \"console.log('Unit test suite is not configured yet')\"",
