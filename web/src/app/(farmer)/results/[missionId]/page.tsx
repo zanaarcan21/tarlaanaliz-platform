@@ -1,7 +1,4 @@
-/*
-PATH: web/src/app/(farmer)/results/[missionId]/page.tsx
-DESC: Analysis results page; map layers (NDVI, NDRE, segmentation), metrics, expert notes, PDF export.
-TODO: Implement this file.
-*/
-
-export {};
+/* BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated. */
+export default function PlaceholderPage() {
+  return null;
+}

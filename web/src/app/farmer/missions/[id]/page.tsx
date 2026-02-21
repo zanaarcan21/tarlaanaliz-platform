@@ -1,7 +1,4 @@
-/*
-PATH: web/src/app/farmer/missions/[id]/page.tsx
-DESC: Tekil görev detayı ve analiz/sonuç durumu.
-TODO: Implement this file.
-*/
-
-export {};
+/* BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated. */
+export default function PlaceholderPage() {
+  return null;
+}

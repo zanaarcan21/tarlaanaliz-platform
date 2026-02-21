@@ -5,10 +5,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 const PUBLIC_PATHS = new Set(["/login", "/", "/api/health"]);
 const ROLE_PREFIXES: Record<string, readonly string[]> = {
-  admin: ["/analytics", "/audit", "/pricing", "/sla", "/users", "/payments", "/calibration", "/qc", "/api-keys", "/experts", "/pilots"],
-  expert: ["/queue", "/review", "/settings", "/sla"],
+  admin: ["/analytics", "/audit", "/pricing", "/admin/sla", "/users", "/admin/payments", "/calibration", "/qc", "/api-keys", "/experts", "/pilots"],
+  expert: ["/queue", "/review", "/expert/settings", "/expert/sla", "/expert/profile"],
   farmer: ["/fields", "/missions", "/subscriptions", "/results", "/payments"],
-  pilot: ["/missions", "/planner", "/capacity", "/settings"],
+  pilot: ["/pilot/missions", "/planner", "/capacity", "/pilot/settings", "/pilot/profile"],
 };
 
 function isStaticPath(pathname: string): boolean {

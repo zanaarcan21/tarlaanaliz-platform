@@ -33,7 +33,7 @@ export default function ExpertLayout({ children }: ExpertLayoutProps) {
           <Link href="/reviews" className="rounded px-2 py-1 text-sm hover:bg-slate-100">
             İncelemelerim
           </Link>
-          <Link href="/profile" className="rounded px-2 py-1 text-sm hover:bg-slate-100">
+          <Link href="/expert/profile" className="rounded px-2 py-1 text-sm hover:bg-slate-100">
             Profil
           </Link>
         </nav>

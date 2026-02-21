@@ -1,7 +1,8 @@
-/*
-PATH: web/src/app/sitemap.ts
-DESC: Dynamic sitemap generation for SEO.
-TODO: Implement this file.
-*/
+/* BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated. */
+/* KR-071: Platform dışa açık route çıktıları kontrollü ve şemalı üretilir. */
 
-export {};
+import type { MetadataRoute } from "next";
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  return [];
+}

@@ -11,10 +11,10 @@ interface PilotLayoutProps {
 }
 
 const navItems = [
-  { href: "/missions", label: "Görevler" },
+  { href: "/pilot/missions", label: "Görevler" },
   { href: "/planner", label: "Planlayıcı" },
   { href: "/capacity", label: "Kapasite" },
-  { href: "/settings", label: "Ayarlar" },
+  { href: "/pilot/settings", label: "Ayarlar" },
 ] as const;
 
 export default function PilotLayout({ children }: PilotLayoutProps) {

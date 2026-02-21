@@ -1,7 +1,10 @@
-/*
-PATH: web/src/app/expert/layout.tsx
-DESC: Expert layout.
-TODO: Implement this file.
-*/
+/* BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated. */
+import type { ReactNode } from "react";
 
-export {};
+interface PlaceholderLayoutProps {
+  readonly children: ReactNode;
+}
+
+export default function PlaceholderLayout({ children }: PlaceholderLayoutProps) {
+  return <>{children}</>;
+}

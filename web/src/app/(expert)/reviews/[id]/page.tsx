@@ -1,7 +1,4 @@
-/*
-PATH: web/src/app/(expert)/reviews/[id]/page.tsx
-DESC: Expert review page; model output, imagery, annotation tools, submit review + training grade.
-TODO: Implement this file.
-*/
-
-export {};
+/* BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated. */
+export default function PlaceholderPage() {
+  return null;
+}

@@ -1,7 +1,4 @@
-/*
-PATH: web/src/app/(auth)/register/page.tsx
-DESC: Registration page; phone + set PIN + farmer/pilot role selection.
-TODO: Implement this file.
-*/
-
-export {};
+/* BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated. */
+export default function PlaceholderPage() {
+  return null;
+}

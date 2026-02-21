@@ -1,7 +1,4 @@
-/*
-PATH: web/src/app/(admin)/price-management/page.tsx
-DESC: Admin price management; view/create/deactivate price snapshots.
-TODO: Implement this file.
-*/
-
-export {};
+/* BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated. */
+export default function PlaceholderPage() {
+  return null;
+}
