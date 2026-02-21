@@ -12,7 +12,7 @@ export default function HomePage() {
   if (role === "admin") redirect("/analytics");
   if (role === "expert") redirect("/queue");
   if (role === "farmer") redirect("/fields");
-  if (role === "pilot") redirect("/missions");
+  if (role === "pilot") redirect("/pilot/missions");
 
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-4 px-4 text-center">

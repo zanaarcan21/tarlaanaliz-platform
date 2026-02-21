@@ -1,7 +1,13 @@
-/*
-PATH: web/src/app/robots.ts
-DESC: robots.txt generation for SEO.
-TODO: Implement this file.
-*/
+/* BOUND: TARLAANALIZ_SSOT_v1_0_0.txt – canonical rules are referenced, not duplicated. */
+/* KR-071: Platform dışa açık endpoint'lerde kontrollü erişim bildirimi yayınlar. */
 
-export {};
+import type { MetadataRoute } from "next";
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: {
+      userAgent: "*",
+      allow: "/",
+    },
+  };
+}

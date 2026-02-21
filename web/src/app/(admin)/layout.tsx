@@ -14,7 +14,7 @@ const navItems = [
   { href: "/analytics", label: "Analytics" },
   { href: "/audit", label: "Audit" },
   { href: "/pricing", label: "Pricing" },
-  { href: "/sla", label: "SLA" },
+  { href: "/admin/sla", label: "SLA" },
   { href: "/users", label: "Users" },
 ] as const;
 

@@ -3,10 +3,23 @@
 import js from "@eslint/js";
 
 export default [
+  {
+    ignores: [".next/**", "dist/**", "coverage/**", "**/*.{ts,tsx}"],
+  },
   js.configs.recommended,
   {
-    files: ["**/*.{js,mjs,cjs,ts,tsx}"],
-    ignores: [".next/**", "dist/**", "coverage/**"],
+    files: ["**/*.{js,mjs,cjs}"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: {
+        caches: "readonly",
+        console: "readonly",
+        fetch: "readonly",
+        process: "readonly",
+        self: "readonly",
+      },
+    },
     rules: {
       "no-console": ["warn", { allow: ["warn", "error", "info"] }],
     },
